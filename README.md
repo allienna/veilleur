@@ -44,6 +44,8 @@ claude
 veilleur/
 ├── README.md
 ├── SETUP.md                          # Detailed setup guide
+├── docs/
+│   └── n8n-google-cloud-setup.md     # n8n & Google Cloud OAuth2 setup
 ├── n8n/
 │   └── docker-compose.yml            # n8n running locally
 ├── claude-code/
