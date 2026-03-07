@@ -10,20 +10,22 @@
             }
           ]
         },
-        "simple": false
+        "simple": false,
+        "filters": {},
+        "options": {}
       },
-      "id": "gmail-trigger",
+      "id": "186aaf37-4af9-4281-bc70-8d12cff2d84f",
       "name": "Gmail Trigger",
       "type": "n8n-nodes-base.gmailTrigger",
       "typeVersion": 1.2,
       "position": [
-        0,
-        0
+        2128,
+        -464
       ],
       "credentials": {
         "gmailOAuth2": {
-          "id": "",
-          "name": "Gmail OAuth2 — veilleur"
+          "id": "Gm3gEWPPsQr8TBzz",
+          "name": "Gmail account"
         }
       }
     },
@@ -31,67 +33,58 @@
       "parameters": {
         "jsCode": "// Extract links from email HTML body\n// Works with both simplified and raw Gmail output\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const data = item.json;\n\n  // Try multiple locations where HTML body might be\n  let html = '';\n\n  // 1. n8n Gmail Trigger with Simplify OFF — html is at top level\n  if (data.html) {\n    html = data.html;\n  }\n  // 2. Simplified format (simple: true)\n  else if (data.textHtml) {\n    html = data.textHtml;\n  }\n  // 3. Raw format - multipart (simple: false, older versions)\n  else if (data.payload?.parts) {\n    for (const part of data.payload.parts) {\n      if (part.mimeType === 'text/html' && part.body?.data) {\n        html = Buffer.from(part.body.data, 'base64url').toString('utf-8');\n        break;\n      }\n      if (part.parts) {\n        for (const subpart of part.parts) {\n          if (subpart.mimeType === 'text/html' && subpart.body?.data) {\n            html = Buffer.from(subpart.body.data, 'base64url').toString('utf-8');\n            break;\n          }\n        }\n      }\n    }\n  }\n  // 4. Raw format - single body\n  else if (data.payload?.body?.data) {\n    html = Buffer.from(data.payload.body.data, 'base64url').toString('utf-8');\n  }\n\n  const subject = data.subject || data.Subject || 'Sans sujet';\n  const from = data.from?.value?.[0]?.address || data.From || data.from || 'unknown';\n\n  if (!html) {\n    results.push({\n      json: {\n        newsletter_name: subject,\n        from: from,\n        received_at: new Date().toISOString(),\n        links: [],\n        link_count: 0,\n        _debug: 'No HTML body found. Available keys: ' + Object.keys(data).join(', ')\n      }\n    });\n    continue;\n  }\n\n  const linkRegex = /href=[\"'](https?:\\/\\/[^\"'\\s>]+)[\"']/gi;\n  const seen = new Set();\n  const links = [];\n  let match;\n\n  while ((match = linkRegex.exec(html)) !== null) {\n    let url = match[1];\n    url = url.replace(/&amp;/g, '&');\n\n    const tldnMatch = url.match(/tldrnewsletter\\.com\\/CL0\\/(https?[^/]+)/);\n    if (tldnMatch) {\n      try { url = decodeURIComponent(tldnMatch[1]); } catch (e) {}\n    }\n\n    if (seen.has(url)) continue;\n    seen.add(url);\n\n    const skip = [\n      'unsubscribe', 'list-manage', 'mailchimp', 'tracking.tldrnewsletter',\n      'tldrnewsletter.com/CL0',\n      'click.', 'mailto:', 'tel:', '.png', '.jpg', '.gif', '.svg',\n      'facebook.com', 'twitter.com', 'x.com/share', 'linkedin.com/share',\n      'linkedin.com/feed', 'linkedin.com/in/',\n      'instagram.com', 'youtube.com/channel', 'open.spotify.com',\n      'play.google.com', 'apps.apple.com', 'beacon', 'pixel',\n      'doubleclick', 'analytics',\n      'campaign-archive', 'manage-preferences', 'view-in-browser',\n      'email.mg.', 'sendgrid.net', 'substack.com/subscribe',\n      'convertkit', 'beehiiv.com/subscribe',\n      'refer.tldr.tech', 'hub.sparklp.co', 'a.tldrnewsletter.com',\n      'tldr.tech/ai?utm', 'advertise.tldr.tech', 'jobs.ashbyhq.com',\n      'tldr.tech/ai/manage', 'go.clerk.com',\n      'webinars.atlassian.com'\n    ];\n\n    const urlLower = url.toLowerCase();\n    if (skip.some(s => urlLower.includes(s))) continue;\n    if (url.length < 20) continue;\n\n    let title = '';\n    try {\n      const escapedUrl = url.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');\n      const titleRegex = new RegExp('href=[\"\\'][^\"\\']* ' + escapedUrl.slice(0, 40) + '[^\"\\']*[\"\\'][^>]*>([^<]+)<', 'i');\n      const titleMatch = html.match(titleRegex);\n      if (titleMatch && titleMatch[1]) {\n        title = titleMatch[1].trim();\n      }\n    } catch (e) {}\n\n    links.push({ url, title });\n  }\n\n  results.push({\n    json: {\n      newsletter_name: subject,\n      from: from,\n      received_at: new Date().toISOString(),\n      links: links,\n      link_count: links.length\n    }\n  });\n}\n\nreturn results;"
       },
-      "id": "extract-links",
+      "id": "de7e6d81-2ffb-4509-bc65-f2413f31135a",
       "name": "Extract Links",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        220,
-        0
+        2352,
+        -464
       ]
     },
     {
       "parameters": {
         "jsCode": "// Flatten links for individual scraping\nconst items = $input.all();\nconst allLinks = [];\n\nfor (const item of items) {\n  const newsletter = item.json.newsletter_name;\n  const from = item.json.from;\n  const receivedAt = item.json.received_at;\n  const links = item.json.links || [];\n\n  for (const link of links) {\n    allLinks.push({\n      json: {\n        url: link.url,\n        title: link.title,\n        newsletter_name: newsletter,\n        from: from,\n        received_at: receivedAt\n      }\n    });\n  }\n}\n\nreturn allLinks;"
       },
-      "id": "flatten-links",
+      "id": "4889904c-0ea7-46ac-895a-8521d44e7c35",
       "name": "Flatten Links",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        440,
-        0
+        2576,
+        -464
       ]
     },
     {
       "parameters": {
-        "batchSize": 1,
         "options": {}
       },
-      "id": "split-batches",
+      "id": "92a21139-7a5b-4b37-bc87-1f7a5bbeedf9",
       "name": "Loop Over Links",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        660,
-        0
+        2800,
+        -464
       ]
     },
     {
       "parameters": {
         "amount": 1.5
       },
-      "id": "wait-node",
+      "id": "8cc436b6-e735-4397-b235-edc8d8d8d025",
       "name": "Wait",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        880,
-        100
+        3008,
+        -368
       ],
       "webhookId": "wait-veilleur"
     },
     {
       "parameters": {
         "url": "=https://r.jina.ai/{{ $json.url }}",
-        "options": {
-          "response": {
-            "response": {
-              "responseFormat": "text"
-            }
-          },
-          "timeout": 15000
-        },
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -100,61 +93,70 @@
               "value": "text/markdown"
             }
           ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 15000
         }
       },
-      "id": "jina-scrape",
+      "id": "0b3fc763-b1c1-4b54-b109-53691cc23326",
       "name": "Scrape via Jina",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1100,
-        100
+        3232,
+        -368
       ],
-      "onError": "continueRegularOutput",
-      "continueOnFail": true
+      "continueOnFail": true,
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
         "jsCode": "// Merge scraped content back with metadata\nconst item = $input.first();\nconst batchItem = $('Loop Over Links').first();\n\nreturn [{\n  json: {\n    url: batchItem.json.url,\n    title: batchItem.json.title,\n    newsletter_name: batchItem.json.newsletter_name,\n    from: batchItem.json.from,\n    received_at: batchItem.json.received_at,\n    content: item.json.data || item.json.body || '',\n    scraped: !item.json.error\n  }\n}];"
       },
-      "id": "merge-content",
+      "id": "d125dc53-d3fe-4117-b0d6-2fab91276522",
       "name": "Merge Content",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1320,
-        100
+        3456,
+        -368
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Aggregate all scraped articles and prepare as binary for file writing\n// Files are written to /data/veilleur/raw/ with date-prefixed names\nconst items = $input.all();\nconst date = new Date().toISOString().split('T')[0];\n\nconst byNewsletter = {};\nfor (const item of items) {\n  const key = item.json.newsletter_name || 'unknown';\n  if (!byNewsletter[key]) {\n    byNewsletter[key] = {\n      newsletter: key,\n      from: item.json.from,\n      received_at: item.json.received_at,\n      links: []\n    };\n  }\n  byNewsletter[key].links.push({\n    url: item.json.url,\n    title: item.json.title,\n    content: item.json.content || '',\n    scraped: item.json.scraped\n  });\n}\n\nconst results = [];\nlet index = 0;\nfor (const [name, data] of Object.entries(byNewsletter)) {\n  index++;\n  const filename = `${date}-newsletter-${String(index).padStart(2, '0')}.json`;\n  const content = JSON.stringify(data, null, 2);\n  const binaryData = await this.helpers.prepareBinaryData(\n    Buffer.from(content, 'utf-8'),\n    filename,\n    'application/json'\n  );\n\n  results.push({\n    json: {\n      date: date,\n      filename: filename,\n      filepath: `/data/veilleur/raw/${filename}`,\n      newsletter: name,\n      link_count: data.links.length\n    },\n    binary: {\n      data: binaryData\n    }\n  });\n}\n\nreturn results;"
+        "jsCode": "// Aggregate all scraped articles and prepare as binary for file writing\n// Files are written to /data/veilleur/raw/ with date-prefixed names\n// Filename uses sender domain + HHmm timestamp to avoid collisions\n// when multiple newsletters arrive on the same day.\nconst items = $input.all();\nconst date = new Date().toISOString().split('T')[0];\n\nfunction senderDomain(email) {\n  const match = (email || '').match(/@([^>\\s]+)/);\n  if (!match) return 'unknown';\n  return match[1]\n    .toLowerCase()\n    .replace(/^(mail|email|newsletter|news|hello|info|noreply|no-reply)\\./, '')\n    .replace(/\\.[a-z]{2,4}$/, '')\n    .replace(/[^a-z0-9]+/g, '-')\n    .replace(/^-+|-+$/g, '');\n}\n\nfunction timeSlug(isoDate) {\n  const d = new Date(isoDate);\n  return String(d.getUTCHours()).padStart(2, '0') + String(d.getUTCMinutes()).padStart(2, '0');\n}\n\nconst byNewsletter = {};\nfor (const item of items) {\n  const key = item.json.newsletter_name || 'unknown';\n  if (!byNewsletter[key]) {\n    byNewsletter[key] = {\n      newsletter: key,\n      from: item.json.from,\n      received_at: item.json.received_at,\n      links: []\n    };\n  }\n  byNewsletter[key].links.push({\n    url: item.json.url,\n    title: item.json.title,\n    content: item.json.content || '',\n    scraped: item.json.scraped\n  });\n}\n\nconst results = [];\nfor (const [name, data] of Object.entries(byNewsletter)) {\n  const domain = senderDomain(data.from);\n  const time = timeSlug(data.received_at);\n  const filename = `${date}-newsletter-${domain}-${time}.json`;\n  const content = JSON.stringify(data, null, 2);\n  const binaryData = await this.helpers.prepareBinaryData(\n    Buffer.from(content, 'utf-8'),\n    filename,\n    'application/json'\n  );\n\n  results.push({\n    json: {\n      date: date,\n      filename: filename,\n      filepath: `/data/veilleur/raw/${filename}`,\n      newsletter: name,\n      link_count: data.links.length\n    },\n    binary: {\n      data: binaryData\n    }\n  });\n}\n\nreturn results;"
       },
-      "id": "prepare-output",
+      "id": "b9d83b73-82ce-40e4-96ae-cd6fb3760f02",
       "name": "Prepare Output",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1540,
-        0
+        3680,
+        -464
       ]
     },
     {
       "parameters": {
         "operation": "write",
         "fileName": "={{ $json.filepath }}",
-        "dataPropertyName": "data"
+        "options": {}
       },
-      "id": "write-file",
+      "id": "bd088439-3f65-43bd-a9c8-47f711cb7066",
       "name": "Write File",
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        1980,
-        0
+        4112,
+        -464
       ]
     }
   ],
+  "pinData": {},
   "connections": {
     "Gmail Trigger": {
       "main": [
@@ -252,10 +254,19 @@
       ]
     }
   },
-  "pinData": {},
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
   },
-  "staticData": null,
+  "versionId": "d4f09ad5-9db9-457b-8fcb-3e8b11ee8516",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0302a7f8a043d0b110a08c76661798c6177ec310fdb4887523ce16e5da9d0e1d"
+  },
+  "id": "8jN0qjAJTp00dHND",
   "tags": []
 }
