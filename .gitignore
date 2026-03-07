@@ -6,3 +6,4 @@ n8n_data/
 
 # OS
 .DS_Store
+scripts/__pycache__/
