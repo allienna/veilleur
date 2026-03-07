@@ -5,3 +5,7 @@ start-n8n:
         colima start --memory 8; \
     fi
     cd n8n && docker-compose up -d
+
+# Restart n8n
+restart-n8n:
+    cd n8n && docker-compose down && docker-compose up -d

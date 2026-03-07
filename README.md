@@ -10,7 +10,7 @@ Automated tech watch pipeline → daily LinkedIn article.
 📧 Gmail (newsletters)
     ↓ n8n (automatic trigger)
 🔗 Link extraction + scraping (Jina Reader)
-    ↓ /Users/sn0rks/Code/github.com/allienna/veilleur/data/YYYY-MM-DD/raw/
+    ↓ /Users/sn0rks/Code/github.com/allienna/veilleur/data/raw/
 🧠 Claude Code (/generate)
     ↓ Filtering → Writing → Formatting
 📋 Notion (review)
@@ -54,10 +54,9 @@ veilleur/
 │       └── commands/
 │           ├── generate.md           # /generate — article generation
 │           └── sources.md            # /sources — daily watch overview
-└── data/                             # Automatically created by n8n
-    └── YYYY-MM-DD/
-        └── raw/
-            └── newsletter-*.json
+└── data/                             # Scraped data and generated articles
+    └── raw/                          # Raw newsletter files from n8n
+        └── YYYY-MM-DD-newsletter-*.json
 ```
 
 ## Stack

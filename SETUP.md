@@ -207,7 +207,7 @@ Jina offers ~200 free requests/day. If you exceed this, add a delay between scra
 ### Claude Code can't find the files
 Check that the Docker volume is properly mounted:
 ```bash
-ls /Users/sn0rks/Code/github.com/allienna/veilleur/data/$(date +%Y-%m-%d)/raw/
+ls /Users/sn0rks/Code/github.com/allienna/veilleur/data/raw/$(date +%Y-%m-%d)-newsletter-*.json
 ```
 
 ### The Notion MCP isn't responding

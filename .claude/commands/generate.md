@@ -4,9 +4,13 @@ Follow these steps in order:
 
 ## 1. Load sources
 
-Read all `newsletter-*.json` files in `../data/$ARGUMENTS/raw/` (or today's date if no argument).
+Determine the target date:
+- If an argument is provided (e.g. `/generate 2026-03-06`), use that date
+- Otherwise, use today's date in YYYY-MM-DD format
 
-If the folder doesn't exist or is empty, notify and stop.
+Read all files matching the pattern `../data/raw/{DATE}-newsletter-*.json`.
+
+If no matching files are found, notify and stop.
 
 ## 2. Filtering
 
@@ -44,13 +48,15 @@ A prompt in English for Gemini (Nano Banana):
 
 ## 5. Local write
 
-Write the three files to `../data/$DATE/`.
+Write the three files to `../data/output/{DATE}/`.
+
+Create the directory if it doesn't exist.
 
 ## 6. Push to Notion
 
 Via the Notion MCP, create a page in the "Veille LinkedIn" database with:
 - Title = article title
-- Date = today's date
+- Date = target date
 - Status = "À relire"
 - Content = article.md
 - A "📝 Post LinkedIn" callout with post.md content
