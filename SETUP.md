@@ -17,7 +17,7 @@ git clone https://github.com/allienna/veilleur.git
 cd veilleur
 
 # Create the data folder
-mkdir -p data
+mkdir -p data/raw data/output
 ```
 
 ---
@@ -36,7 +36,9 @@ Login: `admin` / `veille2026` (change this)
 
 ## Step 3 — Configure the n8n Workflow
 
-Create a new workflow with the following nodes:
+Import the workflow from `n8n/workflow-veilleur.json` or create manually with the following nodes.
+
+See `docs/workflow-n8n.md` for detailed node descriptions.
 
 ### Node 1: Gmail Trigger
 - **Type**: Gmail Trigger
@@ -49,9 +51,8 @@ Create a new workflow with the following nodes:
 ```javascript
 // Parse the email HTML and extract links
 const cheerio = require('cheerio');
-const html = $input.first().json.raw; // Adapt based on Gmail structure
+const html = $input.first().json.raw;
 
-// If content is base64-encoded (raw Gmail format)
 const body = Buffer.from(html, 'base64').toString('utf-8');
 const $ = cheerio.load(body);
 
@@ -62,7 +63,6 @@ $('a[href]').each((i, el) => {
   const url = $(el).attr('href');
   const text = $(el).text().trim();
 
-  // Basic filters: remove tracking, unsubscribe, images, etc.
   if (!url || seen.has(url)) return;
   if (url.includes('unsubscribe')) return;
   if (url.includes('mailto:')) return;
@@ -86,23 +86,15 @@ For each extracted link:
 
 This returns the article content in markdown, for free.
 
-### Node 4: Aggregate & Save (Code node)
+### Node 4: Prepare Output & Save (Code node)
 
 ```javascript
-// Aggregate all results and write the JSON file
-const fs = require('fs');
-const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-const dir = `/data/veille/${date}/raw`;
+// Flatten output: data/raw/YYYY-MM-DD-newsletter-NN.json
+const date = new Date().toISOString().split('T')[0];
+const newsletter_name = $input.first().json.newsletter_name || 'Newsletter';
 
-// Create the folder if needed
-fs.mkdirSync(dir, { recursive: true });
-
-// Count existing files for naming
-const existing = fs.readdirSync(dir).filter(f => f.startsWith('newsletter-'));
-const index = existing.length + 1;
-
-const newsletter = {
-  newsletter: $input.first().json.newsletter_name || 'Newsletter',
+const output = {
+  newsletter: newsletter_name,
   received_at: new Date().toISOString(),
   links: $input.all().map(item => ({
     url: item.json.url,
@@ -111,35 +103,32 @@ const newsletter = {
   }))
 };
 
-const filename = `newsletter-${String(index).padStart(2, '0')}.json`;
-fs.writeFileSync(`${dir}/${filename}`, JSON.stringify(newsletter, null, 2));
-
-return [{ json: { saved: `${dir}/${filename}`, links: newsletter.links.length } }];
+// n8n Write File node handles the actual write
+return [{ json: { content: JSON.stringify(output, null, 2), date, newsletter_name } }];
 ```
 
-> **Note**: The Docker volume mounts `~/veille` to `/data/veille`, so files
-> written by n8n in `/data/veille/` appear in `/Users/sn0rks/Code/github.com/allienna/veilleur/data/` on your Mac.
+### Node 5: Write File
+- **File Path**: `/data/veille/raw/{{ $json.date }}-newsletter-01.json`
+- **Content**: `{{ $json.content }}`
+
+> **Note**: The Docker volume mounts the data directory so files written by n8n
+> appear in `data/raw/` on your Mac. See `n8n/docker-compose.yml` for volume config.
 
 ---
 
 ## Step 4 — Set Up Notion
 
-### Create the "LinkedIn Watch" Database
+### Create the "Veille LinkedIn" Database
 
 In your Notion workspace, create a database with these properties:
-- **Title** (title): article title
+- **Titre** (title): article title
 - **Date** (date): publication date
-- **Status** (select): "To Review", "Approved", "Published"
-- **Topic** (select): "AI", "Leadership", "Data", "Tech"
+- **Status** (select): "A relire", "Valide", "Publie"
+- **Theme** (select): "IA", "Leadership", "Data", "Tech"
 
 ### Connect the Notion MCP to Claude Code
 
-```bash
-# In the claude-code project, add the Notion MCP server
-claude mcp add notion -- npx -y @notionhq/notion-mcp-server
-```
-
-Then follow the Notion authentication instructions (OAuth).
+The Notion MCP is available via Claude.ai's built-in integration. No additional setup needed if using Claude Max.
 
 ---
 
@@ -147,7 +136,7 @@ Then follow the Notion authentication instructions (OAuth).
 
 ```bash
 # Navigate to the project
-cd claude-code
+cd veilleur
 
 # Launch Claude Code
 claude
@@ -163,8 +152,8 @@ claude
 ```
 
 Claude Code will:
-1. Read the scraped files
-2. Show you the filtered sources → you approve
+1. Run `scripts/load_sources.py` to filter sources → you approve
+2. Run `scripts/read_content.py` to read selected content
 3. Suggest the angle → you approve
 4. Generate article + post + image prompt
 5. Push to Notion
@@ -186,11 +175,11 @@ Claude Code will:
 
 | When | What | Who |
 |------|------|-----|
-| Throughout the day | Newsletters arrive → n8n scrapes automatically | 🤖 n8n |
-| ~7 PM | `claude` → `/generate` | 🧠 Claude Code + you (2 approvals) |
-| ~7:15 PM | Notion review + Gemini image + LinkedIn publishing | 👤 You (~10 min) |
+| Throughout the day | Newsletters arrive → n8n scrapes automatically | n8n |
+| ~7 PM | `claude` → `/generate` | Claude Code + you (2 approvals) |
+| ~7:15 PM | Notion review + Gemini image + LinkedIn publishing | You (~10 min) |
 
-**Estimated daily time: 15–20 minutes** (vs ~1h+ previously)
+**Estimated daily time: 15-20 minutes** (vs ~1h+ previously)
 
 ---
 
@@ -207,11 +196,8 @@ Jina offers ~200 free requests/day. If you exceed this, add a delay between scra
 ### Claude Code can't find the files
 Check that the Docker volume is properly mounted:
 ```bash
-ls /Users/sn0rks/Code/github.com/allienna/veilleur/data/raw/$(date +%Y-%m-%d)-newsletter-*.json
+ls data/raw/$(date +%Y-%m-%d)-newsletter-*.json
 ```
 
 ### The Notion MCP isn't responding
-```bash
-claude mcp list   # Check that the server is active
-claude mcp logs notion   # Check the logs
-```
+Check that the Notion integration is connected in your Claude.ai settings.

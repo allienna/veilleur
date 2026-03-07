@@ -7,15 +7,15 @@ Automated tech watch pipeline → daily LinkedIn article.
 ## Architecture
 
 ```
-📧 Gmail (newsletters)
+Gmail (newsletters)
     ↓ n8n (automatic trigger)
-🔗 Link extraction + scraping (Jina Reader)
-    ↓ /Users/sn0rks/Code/github.com/allienna/veilleur/data/raw/
-🧠 Claude Code (/generate)
+Link extraction + scraping (Jina Reader)
+    ↓ data/raw/
+Claude Code (/generate)
     ↓ Filtering → Writing → Formatting
-📋 Notion (review)
+Notion (review)
     ↓ You (~10 min)
-📰 LinkedIn (article + post scheduled at 8:45 AM)
+LinkedIn (article + post scheduled at 8:45 AM)
 ```
 
 ## Quickstart
@@ -32,7 +32,6 @@ cd n8n && docker-compose up -d
 # 3. Configure the n8n workflow (see SETUP.md step 3)
 
 # 4. Use Claude Code
-cd ../claude-code
 claude
 /sources          # View today's watch
 /generate         # Generate article → Notion
@@ -44,19 +43,27 @@ claude
 veilleur/
 ├── README.md
 ├── SETUP.md                          # Detailed setup guide
+├── CLAUDE.md                         # Claude Code project instructions
+├── .claude/
+│   └── commands/
+│       ├── generate.md               # /generate — article generation
+│       └── sources.md                # /sources — daily watch overview
+├── scripts/
+│   ├── load_sources.py               # Load & filter sources (JSON output)
+│   └── read_content.py               # Read full content of selected sources
 ├── docs/
-│   └── n8n-google-cloud-setup.md     # n8n & Google Cloud OAuth2 setup
+│   ├── n8n-google-cloud-setup.md     # n8n & Google Cloud OAuth2 setup
+│   └── workflow-n8n.md               # n8n workflow documentation
 ├── n8n/
-│   └── docker-compose.yml            # n8n running locally
-├── claude-code/
-│   ├── CLAUDE.md                     # Claude Code project instructions
-│   └── .claude/
-│       └── commands/
-│           ├── generate.md           # /generate — article generation
-│           └── sources.md            # /sources — daily watch overview
+│   ├── docker-compose.yml            # n8n running locally
+│   └── workflow-veilleur.json        # n8n workflow export
 └── data/                             # Scraped data and generated articles
-    └── raw/                          # Raw newsletter files from n8n
-        └── YYYY-MM-DD-newsletter-*.json
+    ├── raw/                          # Raw newsletter files from n8n
+    │   └── YYYY-MM-DD-newsletter-*.json
+    └── output/                       # Generated articles
+        ├── YYYY-MM-DD-article.md
+        ├── YYYY-MM-DD-post.md
+        └── YYYY-MM-DD-image-prompt.md
 ```
 
 ## Stack

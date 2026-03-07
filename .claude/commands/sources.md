@@ -1,16 +1,24 @@
-# /sources — Display today's sources
+# /sources — Affiche les sources du jour
 
-Read all files matching the pattern `../data/raw/{DATE}-newsletter-*.json` where {DATE} is the provided argument (e.g. `/sources 2026-03-06`) or today's date if no argument.
+Lance le script de chargement :
 
-Display a summary as a table:
+```bash
+python3 scripts/load_sources.py {DATE}
+```
 
-| # | Source | Newsletter | Topic | Relevance |
-|---|--------|------------|-------|-----------|
+Où {DATE} est l'argument fourni (ex: `/sources 2026-03-06`) ou la date du jour si pas d'argument.
 
-Where:
-- **Source**: original title (truncated to 60 chars) + URL
-- **Newsletter**: name of the originating newsletter
-- **Topic**: AI / Leadership / Data / Tech / Marketing / Other
-- **Relevance**: 🟢 (article) / 🟡 (further reading) / 🔴 (filtered out)
+Affiche un résumé sous forme de tableau à partir du JSON retourné :
 
-Show the total per category at the end.
+| # | Source | Newsletter | Thème | Contenu |
+|---|--------|------------|-------|---------|
+
+Où :
+- **Source** : titre original (tronqué à 60 chars) + URL
+- **Newsletter** : nom de la newsletter d'origine
+- **Thème** : IA / Leadership / Data / Tech / Autre
+- **Contenu** : longueur du contenu scrapé (ou "vide" si pas de contenu)
+
+Ensuite, affiche les sources filtrées (sponsors) en section séparée.
+
+Indique le total par catégorie à la fin.

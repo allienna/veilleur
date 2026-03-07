@@ -1,65 +1,73 @@
-# /generate — Generate today's tech watch article
+# /generate — Génère l'article de veille du jour
 
-Follow these steps in order:
+Effectue les étapes suivantes dans l'ordre :
 
-## 1. Load sources
+## 1. Chargement et filtrage des sources
 
-Determine the target date:
-- If an argument is provided (e.g. `/generate 2026-03-06`), use that date
-- Otherwise, use today's date in YYYY-MM-DD format
+Détermine la date cible :
+- Si un argument est fourni (ex: `/generate 2026-03-06`), utilise cette date
+- Sinon, utilise la date du jour au format YYYY-MM-DD
 
-Read all files matching the pattern `../data/raw/{DATE}-newsletter-*.json`.
+Lance le script de chargement :
 
-If no matching files are found, notify and stop.
+```bash
+python3 scripts/load_sources.py {DATE}
+```
 
-## 2. Filtering
+Ce script retourne un JSON avec les sources filtrées (sponsors retirés, doublons supprimés, classement par thème).
 
-From all collected links:
-- Remove marketing, sponsored, and promotional links (detect by URL or content)
-- Remove duplicates
-- Rank remaining links by relevance (AI > Leadership > Data > Tech > Other)
-- Display the filter results and ask for confirmation before continuing
+Affiche un résumé des sources retenues et filtrées, puis demande confirmation avant de continuer.
 
-## 3. Selection and narrative thread
+## 2. Lecture du contenu des sources retenues
 
-- Identify the narrative thread connecting the best sources together
-- Select 5 to 8 main sources + 3 to 5 "further reading" sources
-- Propose the narrative thread and the article's angle, ask for validation
+Une fois les sources validées, lis leur contenu complet avec :
 
-## 4. Generation
+```bash
+python3 scripts/read_content.py {DATE} 0 1 2 3 ...
+```
 
-Generate three files:
+Passe les valeurs du champ `index` de chaque source retenue (issues du JSON de `load_sources.py`). Le script retourne les 3000 premiers caractères de chaque source.
 
-### article.md
-The full article following CLAUDE.md rules (structure, inline refs, style, etc.)
+## 3. Sélection et fil narratif
 
-### post.md
-The LinkedIn post companion text:
-- 3-5 lines max
-- Catchy, makes people want to click
+- Identifie le fil narratif qui relie les meilleures sources entre elles
+- Sélectionne 5 à 8 sources principales + 3 à 5 sources "pour aller plus loin"
+- Propose le fil narratif et l'angle de l'article, demande validation
+
+## 4. Génération
+
+Génère trois fichiers :
+
+### {DATE}-article.md
+L'article complet en suivant les règles du CLAUDE.md (structure, refs inline, style, etc.)
+
+### {DATE}-post.md
+Le texte d'accompagnement du post LinkedIn :
+- 3-5 lignes max
+- Accrocheur, donne envie de cliquer
 - 2-3 hashtags
-- Question or call to action at the end
+- Question ou appel à réaction en fin
 
-### image-prompt.md
-A prompt in English for Gemini (Nano Banana):
-- Conceptual visual description related to the theme
-- No text in the image
-- Modern, clean style
+### {DATE}-image-prompt.md
+Un prompt en anglais pour Gemini (Nano Banana) :
+- Description visuelle conceptuelle liée au thème
+- Pas de texte dans l'image
+- Style moderne, épuré
 
-## 5. Local write
+## 5. Écriture locale
 
-Write the three files to `../data/output/{DATE}/`.
+Écris les trois fichiers dans `data/output/`.
 
-Create the directory if it doesn't exist.
+Crée le dossier `data/output/` s'il n'existe pas.
 
-## 6. Push to Notion
+## 6. Push Notion
 
-Via the Notion MCP, create a page in the "Veille LinkedIn" database with:
-- Title = article title
-- Date = target date
+Via le MCP Notion, crée une page dans la base "Veille LinkedIn" avec :
+- Titre = titre de l'article
+- Date = date du jour
 - Status = "À relire"
-- Content = article.md
-- A "📝 Post LinkedIn" callout with post.md content
-- A "🎨 Prompt Image" callout with image-prompt.md content
+- Contenu = article.md
+- Un callout "📝 Post LinkedIn" avec le contenu de post.md
+- Un callout "🎨 Prompt Image" avec le contenu de image-prompt.md
 
-Confirm the URL of the created Notion page.
+Confirme l'URL de la page Notion créée.
