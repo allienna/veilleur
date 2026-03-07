@@ -261,13 +261,21 @@ class TestComputeTrendScore(unittest.TestCase):
             'theme': 'IA',
         }
 
+    def _precompute(self, sources, contents=None):
+        """Precompute norm_urls and keywords like detect_trends does."""
+        contents = contents or {}
+        norm_urls = [normalize_url(s['url']) for s in sources]
+        keywords = [extract_keywords(s['title'], contents.get(s['index'], '')) for s in sources]
+        return norm_urls, keywords
+
     def test_url_match_gives_high_score(self):
         url = 'https://example.com/same-article'
         sources = [
             self._make_source(0, 'Article A', 'NL-A', url),
             self._make_source(1, 'Article B', 'NL-B', url),
         ]
-        score = compute_trend_score(0, sources, {}, {0, 1})
+        norm_urls, keywords = self._precompute(sources)
+        score = compute_trend_score(0, sources, {0, 1}, norm_urls, keywords)
         self.assertGreaterEqual(score, 0.5)
 
     def test_same_newsletter_ignored(self):
@@ -276,7 +284,8 @@ class TestComputeTrendScore(unittest.TestCase):
             self._make_source(0, 'Article A', 'Same NL', url),
             self._make_source(1, 'Article B', 'Same NL', url),
         ]
-        score = compute_trend_score(0, sources, {}, {0, 1})
+        norm_urls, keywords = self._precompute(sources)
+        score = compute_trend_score(0, sources, {0, 1}, norm_urls, keywords)
         self.assertEqual(score, 0.0)
 
     def test_score_capped_at_one(self):
@@ -285,8 +294,10 @@ class TestComputeTrendScore(unittest.TestCase):
             self._make_source(0, 'GPT-5 launch new model', 'NL-A', url),
             self._make_source(1, 'GPT-5 launch new model', 'NL-B', url),
         ]
-        content = 'artificial intelligence machine learning deep neural network transformer model training inference optimization deployment scaling'
-        score = compute_trend_score(0, sources, {0: content, 1: content}, {0, 1})
+        contents = {0: 'artificial intelligence machine learning deep neural network transformer model training inference optimization deployment scaling',
+                     1: 'artificial intelligence machine learning deep neural network transformer model training inference optimization deployment scaling'}
+        norm_urls, keywords = self._precompute(sources, contents)
+        score = compute_trend_score(0, sources, {0, 1}, norm_urls, keywords)
         self.assertLessEqual(score, 1.0)
 
 

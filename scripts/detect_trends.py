@@ -13,7 +13,7 @@ import glob as globmod
 import json
 import re
 import sys
-from collections import Counter
+from collections import Counter, deque
 from datetime import date
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs, urlencode
@@ -114,10 +114,7 @@ def build_similarity_graph(sources: list[dict], contents: dict[int, str]) -> dic
             # Layer 2: Title similarity (Jaccard)
             title_sim = compute_title_similarity(sources[i]['title'], sources[j]['title'])
 
-            # Layer 3: Keyword overlap
-            kw_overlap = compute_keyword_overlap(keywords[i], keywords[j])
-
-            # Layer 3: Raw keyword overlap count
+            # Layer 3: Keyword overlap count
             kw_common = len(keywords[i] & keywords[j])
 
             # Check thresholds — any layer above threshold creates an edge
@@ -137,9 +134,9 @@ def find_clusters(graph: dict[int, set[int]]) -> list[set[int]]:
             continue
         # BFS
         cluster = set()
-        queue = [node]
+        queue = deque([node])
         while queue:
-            current = queue.pop(0)
+            current = queue.popleft()
             if current in visited:
                 continue
             visited.add(current)
@@ -163,12 +160,12 @@ def generate_cluster_label(cluster_sources: list[dict]) -> str:
     return ' '.join(top) if top else 'trend'
 
 
-def compute_trend_score(source_idx: int, sources: list[dict], contents: dict[int, str],
-                        cluster: set[int]) -> float:
+def compute_trend_score(source_idx: int, sources: list[dict],
+                        cluster: set[int],
+                        norm_urls: list[str],
+                        keywords: list[set[str]]) -> float:
     """Compute trend score for a source within its cluster."""
     src = sources[source_idx]
-    norm_url = normalize_url(src['url'])
-    src_kw = extract_keywords(src['title'], contents.get(src['index'], ''))
 
     best_url = 0.0
     best_title = 0.0
@@ -181,17 +178,13 @@ def compute_trend_score(source_idx: int, sources: list[dict], contents: dict[int
         if other['newsletter'] == src['newsletter']:
             continue
 
-        # URL match
-        if normalize_url(other['url']) == norm_url:
+        if norm_urls[other_idx] == norm_urls[source_idx]:
             best_url = 1.0
 
-        # Title similarity
         title_sim = compute_title_similarity(src['title'], other['title'])
         best_title = max(best_title, title_sim)
 
-        # Keyword overlap
-        other_kw = extract_keywords(other['title'], contents.get(other['index'], ''))
-        kw_ov = compute_keyword_overlap(src_kw, other_kw)
+        kw_ov = compute_keyword_overlap(keywords[source_idx], keywords[other_idx])
         best_kw = max(best_kw, kw_ov)
 
     return min(1.0, best_url * 0.5 + best_title * 0.3 + best_kw * 0.2)
@@ -220,9 +213,10 @@ def load_all_sources(target_date: str) -> tuple[list[dict], dict[int, str]]:
 
         for link in data.get('links', []):
             url = link.get('url', '')
-            if url in seen_in_newsletter:
+            norm = normalize_url(url)
+            if norm in seen_in_newsletter:
                 continue
-            seen_in_newsletter.add(url)
+            seen_in_newsletter.add(norm)
 
             raw_title = link.get('title', '')
             content = link.get('content', '')
@@ -258,7 +252,11 @@ def detect_trends(target_date: str) -> dict:
             "unclustered": [],
         }
 
-    newsletters = list({s['newsletter'] for s in sources})
+    newsletters = sorted({s['newsletter'] for s in sources})
+
+    # Precompute normalized URLs and keywords for reuse
+    norm_urls = [normalize_url(s['url']) for s in sources]
+    keywords = [extract_keywords(s['title'], contents.get(s['index'], '')) for s in sources]
 
     # Build similarity graph and find clusters
     graph = build_similarity_graph(sources, contents)
@@ -270,7 +268,7 @@ def detect_trends(target_date: str) -> dict:
 
     for cluster_id, cluster in enumerate(clusters):
         cluster_sources = [sources[i] for i in cluster]
-        cluster_newsletters = list({s['newsletter'] for s in cluster_sources})
+        cluster_newsletters = sorted({s['newsletter'] for s in cluster_sources})
         if len(cluster_newsletters) < 2:
             continue
 
@@ -285,7 +283,7 @@ def detect_trends(target_date: str) -> dict:
         source_entries = []
         scores = []
         for i in cluster:
-            score = compute_trend_score(i, sources, contents, cluster)
+            score = compute_trend_score(i, sources, cluster, norm_urls, keywords)
             scores.append(score)
             source_entries.append({
                 "index": sources[i]['index'],
