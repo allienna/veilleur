@@ -46,4 +46,4 @@ Each generated article creates a page in the "Veille LinkedIn" database with:
 - Articles are always reviewed before publication — this is a feature, not a limitation
 - The LinkedIn posting step remains manual (copy from Notion → paste to LinkedIn)
 - If automatic scheduling is added (#10), it would post from Notion's "Prêt" status, preserving the review gate
-- Content is also saved locally in `data/output/` as markdown, providing a git-backed backup
+- Content is also saved locally in `data/output/` as markdown, providing a local file-system backup
