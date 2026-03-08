@@ -46,10 +46,10 @@ def import_csv(filepath):
                 date=date,
                 title=title,
                 themes=themes,
-                likes=int(row.get('likes', 0)),
-                comments=int(row.get('comments', 0)),
-                reposts=int(row.get('reposts', 0)),
-                impressions=int(row.get('impressions', 0)),
+                likes=int(row.get('likes') or 0),
+                comments=int(row.get('comments') or 0),
+                reposts=int(row.get('reposts') or 0),
+                impressions=int(row.get('impressions') or 0),
             )
             results.append(result)
     return {"imported": len(results), "results": results}
@@ -58,10 +58,10 @@ def import_csv(filepath):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Saisie des métriques LinkedIn')
     parser.add_argument('date', nargs='?', help='Date de l\'article (YYYY-MM-DD)')
-    parser.add_argument('--likes', type=int, default=0)
-    parser.add_argument('--comments', type=int, default=0)
-    parser.add_argument('--reposts', type=int, default=0)
-    parser.add_argument('--impressions', type=int, default=0)
+    parser.add_argument('--likes', type=int, default=None)
+    parser.add_argument('--comments', type=int, default=None)
+    parser.add_argument('--reposts', type=int, default=None)
+    parser.add_argument('--impressions', type=int, default=None)
     parser.add_argument('--show', action='store_true', help='Afficher les métriques existantes')
     parser.add_argument('--list', action='store_true', help='Lister les métriques récentes')
     parser.add_argument('--import-csv', type=str, help='Importer depuis un CSV')
@@ -77,14 +77,16 @@ if __name__ == '__main__':
             result = {"error": f"Aucune métrique pour {args.date}"}
     elif args.date:
         title, themes = resolve_article_metadata(args.date)
+        # Merge with existing values to avoid overwriting with 0
+        existing = get_metrics(args.date)
         result = upsert_metrics(
             date=args.date,
             title=title,
             themes=themes,
-            likes=args.likes,
-            comments=args.comments,
-            reposts=args.reposts,
-            impressions=args.impressions,
+            likes=args.likes if args.likes is not None else (existing or {}).get('likes', 0),
+            comments=args.comments if args.comments is not None else (existing or {}).get('comments', 0),
+            reposts=args.reposts if args.reposts is not None else (existing or {}).get('reposts', 0),
+            impressions=args.impressions if args.impressions is not None else (existing or {}).get('impressions', 0),
         )
     else:
         parser.print_help()

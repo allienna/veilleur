@@ -9,7 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
 
-from metrics_db import get_db, upsert_metrics, get_metrics, get_all_metrics
+from metrics_db import get_db, upsert_metrics, get_metrics, get_all_metrics, get_latest_without_metrics
 
 
 class TestMetricsDb(unittest.TestCase):
@@ -77,6 +77,55 @@ class TestMetricsDb(unittest.TestCase):
         upsert_metrics('2099-01-01', 'Test', 'IA', likes=2, db_path=self.db_path)
         stored = get_metrics('2099-01-01', db_path=self.db_path)
         self.assertIsNotNone(stored['updated_at'])
+
+
+class TestGetLatestWithoutMetrics(unittest.TestCase):
+    """Tests for get_latest_without_metrics()."""
+
+    def setUp(self):
+        self.tmpdir = Path(tempfile.mkdtemp())
+        self.db_path = self.tmpdir / 'test_metrics.db'
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
+    def _mock_collection(self, dates):
+        """Create a mock ChromaDB collection with given dates."""
+        from unittest.mock import MagicMock
+        collection = MagicMock()
+        collection.count.return_value = len(dates)
+        collection.get.return_value = {
+            'metadatas': [{'date': d} for d in dates],
+        }
+        return collection
+
+    def test_empty_collection_returns_none(self):
+        collection = self._mock_collection([])
+        result = get_latest_without_metrics(db_path=self.db_path, collection=collection)
+        self.assertIsNone(result)
+
+    def test_returns_date_without_metrics(self):
+        collection = self._mock_collection(['2099-01-01', '2099-01-02'])
+        result = get_latest_without_metrics(db_path=self.db_path, collection=collection)
+        self.assertEqual(result, '2099-01-02')
+
+    def test_skips_dates_with_metrics(self):
+        collection = self._mock_collection(['2099-01-01', '2099-01-02'])
+        upsert_metrics('2099-01-02', 'Test', 'IA', likes=10, db_path=self.db_path)
+        result = get_latest_without_metrics(db_path=self.db_path, collection=collection)
+        self.assertEqual(result, '2099-01-01')
+
+    def test_returns_none_when_all_have_metrics(self):
+        collection = self._mock_collection(['2099-01-01'])
+        upsert_metrics('2099-01-01', 'Test', 'IA', likes=5, db_path=self.db_path)
+        result = get_latest_without_metrics(db_path=self.db_path, collection=collection)
+        self.assertIsNone(result)
+
+    def test_impressions_only_counts_as_having_metrics(self):
+        collection = self._mock_collection(['2099-01-01'])
+        upsert_metrics('2099-01-01', 'Test', 'IA', impressions=100, db_path=self.db_path)
+        result = get_latest_without_metrics(db_path=self.db_path, collection=collection)
+        self.assertIsNone(result)
 
 
 class TestTrackMetricsCsv(unittest.TestCase):

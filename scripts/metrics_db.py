@@ -83,17 +83,21 @@ def get_all_metrics(limit=30, db_path=None):
     return [dict(r) for r in rows]
 
 
-def get_latest_without_metrics(db_path=None):
+def get_latest_without_metrics(db_path=None, collection=None):
     """Retourne la date du dernier article indexé sans métriques enregistrées.
 
     Cherche dans ChromaDB les articles qui n'ont pas de ligne dans la table metrics,
     ou dont les métriques sont toutes à 0.
-    """
-    import sys
-    sys.path.insert(0, str(Path(__file__).parent))
-    from index_article import get_collection
 
-    collection = get_collection()
+    Un objet de collection ChromaDB peut être passé en paramètre (pour les tests) ;
+    sinon, la collection est récupérée via index_article.get_collection().
+    """
+    if collection is None:
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent))
+        from index_article import get_collection
+        collection = get_collection()
+
     if collection.count() == 0:
         return None
 
@@ -104,7 +108,12 @@ def get_latest_without_metrics(db_path=None):
     conn = get_db(db_path)
     for date in dates:
         row = conn.execute("SELECT * FROM metrics WHERE date = ?", (date,)).fetchone()
-        if not row or (row['likes'] == 0 and row['comments'] == 0 and row['reposts'] == 0):
+        if not row or (
+            row['likes'] == 0
+            and row['comments'] == 0
+            and row['reposts'] == 0
+            and row['impressions'] == 0
+        ):
             conn.close()
             return date
 
