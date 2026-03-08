@@ -7,7 +7,9 @@ Usage:
     python3 scripts/metrics_insights.py --themes
     python3 scripts/metrics_insights.py --for-generate
 
-Output: JSON sur stdout.
+Sortie:
+    - Par défaut et avec --themes: JSON sur stdout.
+    - Avec --for-generate: texte brut sur stdout (rien si vide).
 """
 
 import argparse
@@ -24,9 +26,9 @@ def compute_engagement_score(likes=0, comments=0, reposts=0):
     return likes + comments * 3 + reposts * 5
 
 
-def theme_performance(db_path=None):
+def theme_performance(db_path=None, _metrics=None):
     """Agrège l'engagement par thème."""
-    all_metrics = get_all_metrics(limit=1000, db_path=db_path)
+    all_metrics = _metrics or get_all_metrics(limit=1000, db_path=db_path)
 
     if not all_metrics:
         return []
@@ -63,9 +65,9 @@ def theme_performance(db_path=None):
     return results
 
 
-def top_performing_articles(limit=5, db_path=None):
+def top_performing_articles(limit=5, db_path=None, _metrics=None):
     """Retourne les articles les plus performants par engagement."""
-    all_metrics = get_all_metrics(limit=1000, db_path=db_path)
+    all_metrics = _metrics or get_all_metrics(limit=1000, db_path=db_path)
 
     if not all_metrics:
         return []
@@ -94,25 +96,27 @@ def generate_insights(db_path=None):
     if not all_metrics:
         return {"total_articles_tracked": 0, "theme_ranking": [], "recommendations": []}
 
-    themes = theme_performance(db_path)
-    top = top_performing_articles(limit=1, db_path=db_path)
+    themes = theme_performance(_metrics=all_metrics)
+    top = top_performing_articles(limit=1, _metrics=all_metrics)
 
     # Calculate overall average engagement
     scores = [compute_engagement_score(m['likes'], m['comments'], m['reposts']) for m in all_metrics]
     overall_avg = sum(scores) / len(scores) if scores else 0
 
     # Add multiplier vs average to theme ranking
+    # Use unrounded multiplier for threshold logic, round only for display
     theme_ranking = []
     for t in themes:
-        multiplier = round(t['avg_engagement'] / overall_avg, 1) if overall_avg > 0 else 0
-        theme_ranking.append({**t, "multiplier_vs_avg": multiplier})
+        multiplier_raw = t['avg_engagement'] / overall_avg if overall_avg > 0 else 0
+        theme_ranking.append({**t, "multiplier_vs_avg": round(multiplier_raw, 1)})
 
     # Generate recommendations
     recommendations = []
     for t in theme_ranking:
-        if t['multiplier_vs_avg'] >= 1.5:
+        raw = t['avg_engagement'] / overall_avg if overall_avg > 0 else 0
+        if raw >= 1.5:
             recommendations.append(f"Les articles {t['theme']} obtiennent {t['multiplier_vs_avg']}x plus d'engagement que la moyenne")
-        elif t['multiplier_vs_avg'] <= 0.5 and t['total_articles'] >= 2:
+        elif raw <= 0.5 and t['total_articles'] >= 2:
             recommendations.append(f"Les articles {t['theme']} sous-performent — considérer un angle différent")
 
     # Trend: compare last 7 vs previous 7
