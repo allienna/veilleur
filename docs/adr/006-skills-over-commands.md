@@ -1,6 +1,6 @@
 # ADR-006: Migrate from commands to skills with concern separation
 
-- **Status**: Proposed
+- **Status**: Accepted
 - **Date**: 2026-03-08
 
 ## Context
