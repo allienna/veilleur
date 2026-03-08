@@ -40,6 +40,7 @@ Chaque `newsletter-X.json` contient :
 
 - `/generate` — Génère l'article du jour (filtre, rédige, push Notion)
 - `/sources` — Affiche les sources du jour triées par pertinence
+- `/search` — Recherche sémantique dans l'historique des articles
 - `/ship` — Crée une branche, commit, push et ouvre une PR
 - `/merge` — Revue Copilot, résolution des commentaires, squash merge
 
@@ -61,6 +62,7 @@ Utilise les scripts dans `scripts/` pour les opérations déterministes. Cela é
 - `uv run python3 scripts/read_content.py DATE 0 2 5` — Lit le contenu complet des sources aux indices donnés (0-indexed depuis la liste complète)
 - `uv run python3 scripts/index_article.py DATE` — Indexe l'article du jour dans ChromaDB (vector search)
 - `uv run python3 scripts/index_all.py` — Indexe tous les articles existants (backfill)
+- `uv run python3 scripts/search_history.py "query" [--limit N]` — Recherche sémantique dans l'historique des articles
 
 Règle : toujours utiliser ces scripts plutôt que d'écrire du code inline pour lire les fichiers JSON.
 
