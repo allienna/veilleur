@@ -18,6 +18,7 @@ data/
 │   ├── 2026-03-06-post.md
 │   └── 2026-03-06-image-prompt.md
 ├── chromadb/                         # Index vectoriel des articles (ChromaDB)
+├── metrics.db                        # Métriques LinkedIn (SQLite)
 ```
 
 ## Format des fichiers raw (produits par n8n)
@@ -64,6 +65,11 @@ Utilise les scripts dans `scripts/` pour les opérations déterministes. Cela é
 - `uv run python3 scripts/index_article.py DATE` — Indexe l'article du jour dans ChromaDB (vector search)
 - `uv run python3 scripts/index_all.py` — Indexe tous les articles existants (backfill)
 - `uv run python3 scripts/search_history.py "query" [--limit N]` — Recherche sémantique dans l'historique des articles
+- `uv run python3 scripts/track_metrics.py DATE --likes N --comments N --reposts N` — Saisie des métriques LinkedIn d'un post
+- `uv run python3 scripts/track_metrics.py --import-csv fichier.csv` — Import CSV des métriques (backfill)
+- `uv run python3 scripts/track_metrics.py --list` — Liste les métriques récentes
+- `uv run python3 scripts/metrics_insights.py` — Rapport d'insights engagement (thèmes, tendances)
+- `uv run python3 scripts/metrics_insights.py --for-generate` — Insights formatés pour injection dans /generate
 
 Règle : toujours utiliser ces scripts plutôt que d'écrire du code inline pour lire les fichiers JSON.
 
