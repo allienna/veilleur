@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-veilleur — Analyse des métriques LinkedIn et insights d'engagement.
+veilleur — LinkedIn metrics analysis and engagement insights.
 
 Usage:
     python3 scripts/metrics_insights.py
     python3 scripts/metrics_insights.py --themes
     python3 scripts/metrics_insights.py --for-generate
 
-Sortie:
-    - Par défaut et avec --themes: JSON sur stdout.
-    - Avec --for-generate: texte brut sur stdout (rien si vide).
+Output:
+    - Default and --themes: JSON on stdout.
+    - With --for-generate: plain text on stdout (nothing if empty).
 """
 
 import argparse
@@ -22,12 +22,12 @@ from metrics_db import get_all_metrics
 
 
 def compute_engagement_score(likes=0, comments=0, reposts=0):
-    """Score d'engagement pondéré. Comments et reposts pèsent plus."""
+    """Weighted engagement score. Comments and reposts carry more weight."""
     return likes + comments * 3 + reposts * 5
 
 
 def theme_performance(db_path=None, _metrics=None):
-    """Agrège l'engagement par thème."""
+    """Aggregate engagement by theme."""
     all_metrics = _metrics or get_all_metrics(limit=1000, db_path=db_path)
 
     if not all_metrics:
@@ -66,7 +66,7 @@ def theme_performance(db_path=None, _metrics=None):
 
 
 def top_performing_articles(limit=5, db_path=None, _metrics=None):
-    """Retourne les articles les plus performants par engagement."""
+    """Return the top performing articles by engagement."""
     all_metrics = _metrics or get_all_metrics(limit=1000, db_path=db_path)
 
     if not all_metrics:
@@ -90,7 +90,7 @@ def top_performing_articles(limit=5, db_path=None, _metrics=None):
 
 
 def generate_insights(db_path=None):
-    """Produit un rapport d'insights structuré."""
+    """Produce a structured insights report."""
     all_metrics = get_all_metrics(limit=1000, db_path=db_path)
 
     if not all_metrics:
@@ -152,7 +152,7 @@ def generate_insights(db_path=None):
 
 
 def format_insights_for_generate(db_path=None):
-    """Retourne un texte lisible pour injection dans /generate."""
+    """Return human-readable text for injection into /generate."""
     insights = generate_insights(db_path)
 
     if insights['total_articles_tracked'] == 0:
@@ -179,9 +179,9 @@ def format_insights_for_generate(db_path=None):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Insights engagement LinkedIn')
-    parser.add_argument('--themes', action='store_true', help='Performance par thème uniquement')
-    parser.add_argument('--for-generate', action='store_true', help='Format texte pour /generate')
+    parser = argparse.ArgumentParser(description='LinkedIn engagement insights')
+    parser.add_argument('--themes', action='store_true', help='Theme performance only')
+    parser.add_argument('--for-generate', action='store_true', help='Plain text format for /generate')
     args = parser.parse_args()
 
     if args.for_generate:

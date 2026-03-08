@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-veilleur — Indexation d'un article dans ChromaDB.
+veilleur — Index an article into ChromaDB.
 
 Usage:
     python3 scripts/index_article.py 2026-03-07
-    python3 scripts/index_article.py  # date du jour par défaut
+    python3 scripts/index_article.py  # defaults to today's date
 
-Output: JSON sur stdout confirmant l'indexation.
+Output: JSON on stdout confirming the indexing.
 """
 
 import json
@@ -23,24 +23,24 @@ COLLECTION_NAME = 'articles'
 
 
 def parse_article(filepath):
-    """Parse un fichier article markdown en données structurées."""
+    """Parse a markdown article file into structured data."""
     text = filepath.read_text(encoding='utf-8')
     lines = text.strip().split('\n')
 
-    # Titre : première ligne commençant par #
+    # Title: first line starting with #
     title = 'Sans titre'
     for line in lines:
         if line.startswith('# '):
             title = line.lstrip('# ').strip()
             break
 
-    # Corps : tout le texte avant "## Sources"
+    # Body: all text before "## Sources"
     body = text
     sources_idx = text.find('\n## Sources')
     if sources_idx != -1:
         body = text[:sources_idx].strip()
 
-    # Thèmes : détecter sur chaque section (séparée par **bold**)
+    # Themes: detect on each section (separated by **bold**)
     sections = re.split(r'\n\*\*[^*]+\*\*\n', body)
     themes = set()
     for section in sections:
@@ -50,10 +50,10 @@ def parse_article(filepath):
     if not themes:
         themes.add(detect_theme(title, body))
 
-    # Nombre de sources : compter les références [[N](url)]
+    # Source count: count references [[N](url)]
     source_count = len(set(re.findall(r'\[\[\d+\]', text)))
 
-    # Nombre de mots
+    # Word count
     word_count = len(body.split())
 
     return {
@@ -66,7 +66,7 @@ def parse_article(filepath):
 
 
 def get_collection(persist_directory=None):
-    """Retourne la collection ChromaDB 'articles'."""
+    """Return the ChromaDB 'articles' collection."""
     import chromadb
 
     persist_dir = str(persist_directory or DEFAULT_PERSIST_DIR)
@@ -74,9 +74,9 @@ def get_collection(persist_directory=None):
     return client.get_or_create_collection(name=COLLECTION_NAME)
 
 
-def index_article(target_date, persist_directory=None):
-    """Indexe un article par date. Idempotent via upsert sur l'ID = date."""
-    output_dir = Path(__file__).parent.parent / 'data' / 'output'
+def index_article(target_date, persist_directory=None, output_directory=None):
+    """Index an article by date. Idempotent via upsert on ID = date."""
+    output_dir = Path(output_directory) if output_directory is not None else Path(__file__).parent.parent / 'data' / 'output'
     filepath = output_dir / f"{target_date}-article.md"
 
     if not filepath.exists():
