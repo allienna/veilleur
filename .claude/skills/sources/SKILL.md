@@ -1,32 +1,32 @@
 ---
 name: sources
-description: Affiche les sources du jour triées par thème/priorité
+description: Display today's sources sorted by theme priority
 argument-hint: "[date]"
 ---
 
-# /sources — Affiche les sources du jour
+# /sources — Display today's sources
 
-La date cible est `$ARGUMENTS` si fourni, sinon la date du jour (YYYY-MM-DD).
+Target date is `$ARGUMENTS` if provided, otherwise today's date (YYYY-MM-DD).
 
-## Exécution
+## Execution
 
 ```bash
 uv run python3 scripts/load_sources.py {DATE}
 ```
 
-## Affichage
+## Display
 
-Affiche un résumé sous forme de tableau à partir du JSON retourné :
+Show a summary table from the returned JSON:
 
-| # | Source | Newsletter | Thème | Contenu |
+| # | Source | Newsletter | Theme | Content |
 |---|--------|------------|-------|---------|
 
-Où :
-- **Source** : titre original (tronqué à 60 chars) + URL
-- **Newsletter** : nom de la newsletter d'origine
-- **Thème** : IA / Leadership / Data / Tech / Autre
-- **Contenu** : longueur du contenu scrapé (ou "vide" si pas de contenu)
+Where:
+- **Source**: original title (truncated to 60 chars) + URL
+- **Newsletter**: source newsletter name
+- **Theme**: IA / Leadership / Data / Tech / Autre
+- **Content**: scraped content length (or "empty" if no content)
 
-Ensuite, affiche les sources filtrées, avec la raison de filtrage (`filter_reason`), en section séparée.
+Then display filtered sources with their filter reason (`filter_reason`) in a separate section.
 
-Indique le total par catégorie à la fin.
+Show totals per category at the end.

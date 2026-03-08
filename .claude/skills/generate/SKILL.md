@@ -1,115 +1,115 @@
 ---
 name: generate
-description: Génère l'article de veille du jour (filtre, rédige, push Notion)
+description: Generate the daily tech watch article (filter, write, push to Notion)
 context: fork
 argument-hint: "[date]"
 ---
 
-# /generate — Génère l'article de veille du jour
+# /generate — Generate the daily tech watch article
 
-Lis attentivement le guide d'écriture et le template avant de commencer :
-- `${CLAUDE_SKILL_DIR}/writing-guide.md` — persona, style, règles strictes, structure
-- `${CLAUDE_SKILL_DIR}/article-template.md` — template de sortie
+Read the writing guide and template carefully before starting:
+- `${CLAUDE_SKILL_DIR}/writing-guide.md` — persona, style, strict rules, structure
+- `${CLAUDE_SKILL_DIR}/article-template.md` — output structure template
 
-La date cible est `$ARGUMENTS` si fourni, sinon la date du jour (YYYY-MM-DD).
+Target date is `$ARGUMENTS` if provided, otherwise today's date (YYYY-MM-DD).
 
-Effectue les étapes suivantes dans l'ordre :
+Follow these steps in order:
 
-## 0.5 Feedback métriques
+## 0.5 Metrics feedback
 
-Vérifie s'il y a un article récent sans métriques :
+Check if there's a recent article without metrics:
 
 ```bash
 uv run python3 scripts/track_metrics.py --latest-untracked
 ```
 
-Si un article sans métriques est trouvé (champ `date` non null) :
-- Affiche : "📊 Ton post du {DATE} ({TITLE}) — combien de likes, commentaires, reposts ?"
-- Attend la réponse de l'utilisateur
-- Enregistre les métriques :
+If an article without metrics is found (`date` field is not null):
+- Display: "📊 Ton post du {DATE} ({TITLE}) — combien de likes, commentaires, reposts ?"
+- Wait for user response
+- Record the metrics:
 
 ```bash
 uv run python3 scripts/track_metrics.py {DATE} --likes {L} --comments {C} --reposts {R}
 ```
 
-Puis affiche les insights d'engagement :
+Then display engagement insights:
 
 ```bash
 uv run python3 scripts/metrics_insights.py --for-generate
 ```
 
-Si le script retourne du texte, affiche-le. Ces insights guident le choix de l'angle narratif à l'étape 3.
+If the script returns text, display it. These insights guide the narrative angle selection in step 3.
 
-Si aucun article sans métriques (champ `date` null), passe directement à l'étape 1.
+If no article without metrics (`date` field is null), skip to step 1.
 
-## 1. Chargement et filtrage des sources
+## 1. Load and filter sources
 
 ```bash
 uv run python3 scripts/load_sources.py {DATE}
 ```
 
-Ce script retourne un JSON avec les sources filtrées (sponsors retirés, doublons supprimés, classement par thème).
+This script returns JSON with filtered sources (sponsors removed, duplicates eliminated, grouped by theme).
 
-Affiche un résumé des sources retenues et filtrées, puis demande confirmation avant de continuer.
+Display a summary of kept and filtered sources, then ask for confirmation before continuing.
 
-## 1.5 Détection de tendances
+## 1.5 Trend detection
 
 ```bash
 uv run python3 scripts/detect_trends.py {DATE}
 ```
 
-Si des tendances sont détectées (clusters avec score > 0), affiche les clusters avec scores et newsletters.
-Utilise ces tendances pour guider le choix de l'angle narratif à l'étape 3.
-Si aucune tendance (ex: une seule newsletter), passe à l'étape 2.
+If trends are detected (clusters with score > 0), display clusters with scores and newsletters.
+Use these trends to guide narrative angle selection in step 3.
+If no trends (e.g. single newsletter), skip to step 2.
 
-## 2. Lecture du contenu des sources retenues
+## 2. Read selected source content
 
 ```bash
 uv run python3 scripts/read_content.py {DATE} 0 1 2 3 ...
 ```
 
-Passe les valeurs du champ `index` de chaque source retenue (issues du JSON de `load_sources.py`). Le script retourne les 3000 premiers caractères de chaque source.
+Pass the `index` field values from each kept source (from the `load_sources.py` JSON output). The script returns the first 3000 characters of each source.
 
-## 3. Sélection et fil narratif
+## 3. Narrative selection
 
-- Identifie le fil narratif qui relie les meilleures sources entre elles
-- Sélectionne 5 à 8 sources principales + 3 à 5 sources "pour aller plus loin"
-- Propose le fil narratif et l'angle de l'article, demande validation
+- Identify the narrative thread connecting the best sources
+- Select 5 to 8 main sources + 3 to 5 "pour aller plus loin" sources
+- Propose the narrative thread and article angle, ask for validation
 
-## 4. Génération
+## 4. Generation
 
-Génère trois fichiers en suivant le guide d'écriture (`writing-guide.md`) :
+Generate three files following the writing guide (`writing-guide.md`):
 
 ### {DATE}-article.md
-L'article complet en respectant la structure du template (`article-template.md`).
+The full article following the template structure (`article-template.md`).
 
 ### {DATE}-post.md
-Le texte d'accompagnement du post LinkedIn (voir section "Texte du post LinkedIn" dans le guide).
+The LinkedIn post text (see "Texte du post LinkedIn" section in the guide).
 
 ### {DATE}-image-prompt.md
-Le prompt image (voir section "Prompt image" dans le guide).
+The image prompt (see "Prompt image" section in the guide).
 
-## 5. Écriture locale
+## 5. Write to disk
 
-Écris les trois fichiers dans `data/output/`.
-Crée le dossier `data/output/` s'il n'existe pas.
+Write all three files to `data/output/`.
+Create `data/output/` directory if it doesn't exist.
 
-## 5.5 Indexation dans l'historique
+## 5.5 Index to history
 
 ```bash
 uv run python3 scripts/index_article.py {DATE}
 ```
 
-Non-bloquant : si l'indexation échoue, affiche un avertissement puis continue vers l'étape 6.
+Non-blocking: if indexing fails, display a warning and continue to step 6.
 
-## 6. Push Notion
+## 6. Push to Notion
 
-Via le MCP Notion, crée une page dans la base "Veille LinkedIn" avec :
-- Titre = titre de l'article
-- Date = date du jour
+Via the Notion MCP, create a page in the "Veille LinkedIn" database with:
+- Title = article title
+- Date = target date
 - Status = "À relire"
-- Contenu = article.md
-- Un callout "📝 Post LinkedIn" avec le contenu de post.md
-- Un callout "🎨 Prompt Image" avec le contenu de image-prompt.md
+- Content = article.md
+- A callout "📝 Post LinkedIn" with post.md content
+- A callout "🎨 Prompt Image" with image-prompt.md content
 
-Confirme l'URL de la page Notion créée.
+Confirm the URL of the created Notion page.

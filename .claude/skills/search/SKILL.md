@@ -1,26 +1,26 @@
 ---
 name: search
-description: Recherche sémantique dans l'historique des articles
+description: Semantic search in article history
 argument-hint: "<query>"
 ---
 
-# /search — Recherche dans l'historique des articles
+# /search — Search article history
 
-Effectue une recherche sémantique dans les articles passés indexés dans ChromaDB.
+Perform a semantic search across past articles indexed in ChromaDB.
 
-## Exécution
+## Execution
 
 ```bash
 uv run python3 scripts/search_history.py "$ARGUMENTS" --limit 5
 ```
 
-## Affichage des résultats
+## Display results
 
-Affiche les résultats sous forme de tableau :
+Show results as a table:
 
-| Date | Titre | Pertinence | Thèmes | Extrait |
-|------|-------|------------|--------|---------|
+| Date | Title | Relevance | Themes | Excerpt |
+|------|-------|-----------|--------|---------|
 
-Si aucun résultat :
-- si `total_indexed == 0`, indique que l'historique est vide et suggère de lancer `uv run python3 scripts/index_all.py` pour indexer les articles existants ;
-- si `total_indexed > 0`, indique qu'aucun article indexé ne correspond à cette requête et suggère d'affiner la recherche.
+If no results:
+- if `total_indexed == 0`, indicate the history is empty and suggest running `uv run python3 scripts/index_all.py` to index existing articles;
+- if `total_indexed > 0`, indicate no indexed article matches this query and suggest refining the search.

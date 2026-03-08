@@ -1,54 +1,54 @@
 ---
 name: ship
-description: Crée une branche, commit, push et ouvre une PR
+description: Create branch, commit, push and open a PR
 argument-hint: "[issue-number]"
 ---
 
-# /ship — Crée une branche, commit, push et ouvre une PR
+# /ship — Create branch, commit, push and open a PR
 
-## 1. Vérification de l'état
+## 1. Check status
 
 ```bash
 git status
 git branch
 ```
 
-Vérifie qu'il y a des changements à committer. Si aucun changement, préviens et arrête.
+Verify there are changes to commit. If no changes, notify and stop.
 
-## 2. Création de branche
+## 2. Create branch
 
-Si on est sur `main`, crée une nouvelle branche avec un nom descriptif basé sur les changements :
-- `docs/...` pour de la documentation
-- `feat/...` pour des fonctionnalités
-- `fix/...` pour des corrections
+If on `main`, create a new branch with a descriptive name based on the changes:
+- `docs/...` for documentation
+- `feat/...` for features
+- `fix/...` for fixes
 
-Si on est déjà sur une feature branch, reste dessus.
+If already on a feature branch, stay on it.
 
-## 3. Analyse des changements
+## 3. Analyze changes
 
 ```bash
 git diff
 git diff --cached
 ```
 
-Analyse les changements staged et unstaged pour comprendre ce qui a été modifié.
+Analyze staged and unstaged changes to understand what was modified.
 
 ## 4. Commit
 
-- Stage les fichiers pertinents (pas de `git add .`, fichiers spécifiques uniquement)
-- Propose un message de commit concis au format conventional commits
-- **Ne PAS inclure `Co-Authored-By`**
-- **Demande validation du message avant de committer**
+- Stage relevant files (no `git add .`, specific files only)
+- Propose a concise commit message using conventional commits format
+- **Do NOT include `Co-Authored-By`**
+- **Ask for validation before committing**
 
-## 5. Push et PR
+## 5. Push and PR
 
 ```bash
 git push -u origin {BRANCH}
 ```
 
-Ouvre une PR avec :
-- Titre court (< 70 caractères)
-- Body avec section `## Summary` (bullets) et `## Test plan` (checklist)
-- Si un argument est fourni (ex: `/ship 17`), ajoute `Closes #$ARGUMENTS` dans le body
+Open a PR with:
+- Short title (< 70 characters)
+- Body with `## Summary` (bullets) and `## Test plan` (checklist) sections
+- If an argument is provided (e.g. `/ship 17`), add `Closes #$ARGUMENTS` in the body
 
-Confirme l'URL de la PR créée.
+Confirm the created PR URL.

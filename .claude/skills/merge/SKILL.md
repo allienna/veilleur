@@ -1,55 +1,55 @@
 ---
 name: merge
-description: Revue Copilot, résolution des commentaires, squash merge
+description: Copilot review, comment resolution, squash merge
 argument-hint: "<pr-number>"
 ---
 
-# /merge — Revue Copilot, résolution des commentaires, squash merge
+# /merge — Copilot review, comment resolution, squash merge
 
-Prend en argument un numéro de PR (`$ARGUMENTS`). Si pas d'argument, liste les PRs ouvertes et demande laquelle traiter.
+Takes a PR number as argument (`$ARGUMENTS`). If no argument, list open PRs and ask which one to process.
 
-## 1. Vérification des commentaires Copilot
+## 1. Check Copilot comments
 
 ```bash
 gh pr view {PR_NUMBER} --comments
 gh api repos/allienna/veilleur/pulls/{PR_NUMBER}/comments
 ```
 
-Analyse les commentaires inline de Copilot (ou d'autres reviewers).
+Analyze inline comments from Copilot (or other reviewers).
 
-## 2. Résolution des commentaires
+## 2. Resolve comments
 
-Si des commentaires inline existent :
-- Affiche chaque commentaire avec le fichier et la ligne concernée
-- Évalue si le commentaire est pertinent
-- Si pertinent : applique le fix, commit, push, et répond "Fixed, thanks." au commentaire via l'API :
+If inline comments exist:
+- Display each comment with its file and line
+- Evaluate whether the comment is relevant
+- If relevant: apply the fix, commit, push, and reply "Fixed, thanks." via API:
   ```bash
-  gh api repos/allienna/veilleur/pulls/comments/{COMMENT_ID}/replies -f body="Fixed, thanks."
+  gh api repos/allienna/veilleur/pulls/{PR_NUMBER}/comments/{COMMENT_ID}/replies -f body="Fixed, thanks."
   ```
-- Si non pertinent : explique pourquoi et demande confirmation avant de répondre
+- If not relevant: explain why and ask for confirmation before replying
 
-Si aucun commentaire inline : passe directement à l'étape 3.
+If no inline comments: skip to step 3.
 
 ## 3. Squash merge
 
-Prépare un message de commit squash :
-- Première ligne : titre de la PR avec numéro (ex: `docs: add ADR-001 (#18)`)
-- Corps : résumé concis des changements (2-3 lignes max)
-- Référence `Closes #XX` si une issue est liée
-- **Ne PAS inclure `Co-Authored-By`**
+Prepare a squash commit message:
+- First line: PR title with number (e.g. `docs: add ADR-001 (#18)`)
+- Body: concise summary of changes (2-3 lines max)
+- Reference `Closes #XX` if an issue is linked
+- **Do NOT include `Co-Authored-By`**
 
-**Affiche le message de commit proposé et demande validation avant de merger.**
+**Display the proposed commit message and ask for validation before merging.**
 
-Une fois validé :
+Once validated:
 ```bash
 gh pr merge {PR_NUMBER} --squash --delete-branch --subject "{TITLE}" --body "{BODY}"
 ```
 
-## 4. Mise à jour locale
+## 4. Local update
 
 ```bash
 git checkout main
 git pull
 ```
 
-Confirme que le merge est fait et que main est à jour.
+Confirm the merge is done and main is up to date.
