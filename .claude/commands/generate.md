@@ -18,6 +18,16 @@ Ce script retourne un JSON avec les sources filtrées (sponsors retirés, doublo
 
 Affiche un résumé des sources retenues et filtrées, puis demande confirmation avant de continuer.
 
+## 1.5 Détection de tendances
+
+```bash
+python3 scripts/detect_trends.py {DATE}
+```
+
+Si des tendances sont détectées (clusters avec score > 0), affiche les clusters avec scores et newsletters.
+Utilise ces tendances pour guider le choix de l'angle narratif à l'étape 3.
+Si aucune tendance (ex: une seule newsletter), passe à l'étape 2.
+
 ## 2. Lecture du contenu des sources retenues
 
 Une fois les sources validées, lis leur contenu complet avec :
