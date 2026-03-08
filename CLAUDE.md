@@ -40,13 +40,27 @@ Chaque `newsletter-X.json` contient :
 
 - `/generate` — Génère l'article du jour (filtre, rédige, push Notion)
 - `/sources` — Affiche les sources du jour triées par pertinence
+- `/ship` — Crée une branche, commit, push et ouvre une PR
+- `/merge` — Revue Copilot, résolution des commentaires, squash merge
+
+## Environnement Python
+
+Le projet utilise [uv](https://docs.astral.sh/uv/) pour la gestion des dépendances. Toujours préfixer les commandes Python avec `uv run` :
+
+```bash
+uv run python3 scripts/load_sources.py DATE
+```
+
+Pour installer les dépendances : `uv sync`
 
 ## Scripts utilitaires
 
 Utilise les scripts dans `scripts/` pour les opérations déterministes. Cela évite de réinventer la lecture des données à chaque run.
 
-- `python3 scripts/load_sources.py DATE` — Charge et filtre les sources du jour, retourne du JSON sur stdout (sources classées par thème, sponsors filtrés)
-- `python3 scripts/read_content.py DATE 0 2 5` — Lit le contenu complet des sources aux indices donnés (0-indexed depuis la liste complète)
+- `uv run python3 scripts/load_sources.py DATE` — Charge et filtre les sources du jour, retourne du JSON sur stdout (sources classées par thème, sponsors filtrés)
+- `uv run python3 scripts/read_content.py DATE 0 2 5` — Lit le contenu complet des sources aux indices donnés (0-indexed depuis la liste complète)
+- `uv run python3 scripts/index_article.py DATE` — Indexe l'article du jour dans ChromaDB (vector search)
+- `uv run python3 scripts/index_all.py` — Indexe tous les articles existants (backfill)
 
 Règle : toujours utiliser ces scripts plutôt que d'écrire du code inline pour lire les fichiers JSON.
 

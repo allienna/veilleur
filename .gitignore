@@ -4,6 +4,9 @@ data/
 # n8n local data
 n8n_data/
 
+# Python
+.venv/
+__pycache__/
+
 # OS
 .DS_Store
-scripts/__pycache__/
