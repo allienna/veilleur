@@ -17,6 +17,7 @@ data/
 │   ├── 2026-03-06-article.md
 │   ├── 2026-03-06-post.md
 │   └── 2026-03-06-image-prompt.md
+├── chromadb/                         # Index vectoriel des articles (ChromaDB)
 ```
 
 ## Format des fichiers raw (produits par n8n)
