@@ -11,7 +11,7 @@ uv run python3 scripts/track_metrics.py --latest-untracked
 ```
 
 Si un article sans métriques est trouvé (champ `date` non null) :
-- Affiche : "📊 Ton post du {DATE} ({TITLE}) — combien de likes, comments, reposts ?"
+- Affiche : "📊 Ton post du {DATE} ({TITLE}) — combien de likes, commentaires, reposts ?"
 - Attend la réponse de l'utilisateur
 - Enregistre les métriques :
 
