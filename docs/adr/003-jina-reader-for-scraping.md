@@ -9,7 +9,7 @@ The n8n workflow needs to extract article content from URLs found in newsletters
 
 ## Decision
 
-Use [Jina Reader](https://r.jina.ai) (`r.jina.ai/{url}`) for markdown extraction, integrated directly into the n8n workflow.
+Use [Jina Reader](https://r.jina.ai) (`https://r.jina.ai/{url}`) for markdown extraction, integrated directly into the n8n workflow.
 
 ## Arguments for this approach
 
@@ -34,6 +34,6 @@ Use [Jina Reader](https://r.jina.ai) (`r.jina.ai/{url}`) for markdown extraction
 
 ## Consequences
 
-- If Jina Reader becomes unavailable or rate-limited, the fallback is to add a paid API key or switch to a self-hosted solution
+- If Jina Reader becomes unavailable or rate-limited, the fallback is to upgrade to a paid plan or switch to a self-hosted solution
 - Content quality filtering is handled downstream in `load_sources.py` (MIN_CONTENT_LENGTH = 500 chars)
 - If daily link volume exceeds ~150, we should consider a paid plan or alternative service
