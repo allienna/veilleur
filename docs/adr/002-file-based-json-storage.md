@@ -25,7 +25,7 @@ Each file contains a simple structure:
 ## Arguments for this approach
 
 1. **Inspectable** — files can be read, diffed, and debugged with standard tools (`cat`, `jq`, `diff`)
-2. **Version-controllable** — data lives in the repo, changes are trackable via git
+2. **Version-controllable (optional)** — files live under `data/raw/` on disk and can be committed to git if `.gitignore` is adjusted, but are typically kept local
 3. **Zero infrastructure** — no database server to install, configure, or maintain
 4. **n8n compatibility** — n8n writes directly to the filesystem via volume mount, no database driver needed
 5. **Sufficient at current scale** — typically 5-15 newsletter files per day, glob-based loading is fast enough
@@ -34,7 +34,7 @@ Each file contains a simple structure:
 
 1. **No relational queries** — cross-newsletter searches require loading all files into memory
 2. **No indexing** — searching historical content is O(n) over all files
-3. **Duplication risk** — same link appearing in multiple newsletters is handled at load time, not at storage level
+3. **Duplication risk** — in the main generation pipeline (`load_sources.py`), the same link appearing in multiple newsletters is deduplicated at load time, not at storage level; some analysis scripts (e.g., trend detection) intentionally keep duplicates
 
 ## Consequences
 
