@@ -41,7 +41,7 @@ Chaque `newsletter-X.json` contient :
 ## Skills disponibles
 
 - `/generate` — Génère l'article du jour (filtre, rédige, push Notion). Les règles d'écriture sont dans `.claude/skills/generate/writing-guide.md`
-- `/sources` — Affiche les sources du jour triées par pertinence
+- `/sources` — Affiche les sources du jour triées par thème/priorité
 - `/search` — Recherche sémantique dans l'historique des articles
 - `/ship` — Crée une branche, commit, push et ouvre une PR
 - `/merge` — Revue Copilot, résolution des commentaires, squash merge

@@ -1,6 +1,6 @@
 ---
 name: sources
-description: Affiche les sources du jour triées par pertinence
+description: Affiche les sources du jour triées par thème/priorité
 argument-hint: "[date]"
 ---
 
@@ -27,6 +27,6 @@ Où :
 - **Thème** : IA / Leadership / Data / Tech / Autre
 - **Contenu** : longueur du contenu scrapé (ou "vide" si pas de contenu)
 
-Ensuite, affiche les sources filtrées (sponsors) en section séparée.
+Ensuite, affiche les sources filtrées, avec la raison de filtrage (`filter_reason`), en section séparée.
 
 Indique le total par catégorie à la fin.

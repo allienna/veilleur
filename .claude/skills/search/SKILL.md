@@ -21,4 +21,6 @@ Affiche les résultats sous forme de tableau :
 | Date | Titre | Pertinence | Thèmes | Extrait |
 |------|-------|------------|--------|---------|
 
-Si aucun résultat, indique que l'historique est vide et suggère de lancer `uv run python3 scripts/index_all.py` pour indexer les articles existants.
+Si aucun résultat :
+- si `total_indexed == 0`, indique que l'historique est vide et suggère de lancer `uv run python3 scripts/index_all.py` pour indexer les articles existants ;
+- si `total_indexed > 0`, indique qu'aucun article indexé ne correspond à cette requête et suggère d'affiner la recherche.
