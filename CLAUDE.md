@@ -38,9 +38,9 @@ Chaque `newsletter-X.json` contient :
 }
 ```
 
-## Commandes disponibles
+## Skills disponibles
 
-- `/generate` — Génère l'article du jour (filtre, rédige, push Notion)
+- `/generate` — Génère l'article du jour (filtre, rédige, push Notion). Les règles d'écriture sont dans `.claude/skills/generate/writing-guide.md`
 - `/sources` — Affiche les sources du jour triées par pertinence
 - `/search` — Recherche sémantique dans l'historique des articles
 - `/ship` — Crée une branche, commit, push et ouvre une PR
@@ -73,48 +73,6 @@ Utilise les scripts dans `scripts/` pour les opérations déterministes. Cela é
 - `uv run python3 scripts/metrics_insights.py --for-generate` — Insights formatés pour injection dans /generate
 
 Règle : toujours utiliser ces scripts plutôt que d'écrire du code inline pour lire les fichiers JSON.
-
-## Règles de génération
-
-### Filtrage des sources
-- Retirer les liens marketing, sponsorisés, promotionnels
-- Retirer les doublons (même URL ou contenu quasi-identique)
-- Prioriser les thèmes : IA, Leadership, Data, actualités tech
-- Garder minimum 5 sources pour l'article
-
-### Style de l'article
-- Français, direct, personnel — utilise "je" et implique le lecteur
-- Phrases courtes, paragraphes légers
-- Pas de jargon inutile, pas de ton "corporate"
-- Fil narratif cohérent entre les sections, pas une liste de liens commentés
-
-### Références inline
-- Format : `[[N](URL)]` placé juste après le fait ou l'idée
-- Chaque source référencée dès sa première utilisation
-- Les réutilisations ultérieures reprennent le même format
-
-### Structure de l'article
-- Titre percutant (question ou affirmation forte)
-- Intro (3-4 lignes) : question provocante au lecteur + fait/chiffre. Pas de "je", pas d'anecdote perso
-- Sections avec sous-titres en gras, NON numérotés, liés par un fil narratif
-- Blockquote si citation forte dans les sources
-- Conclusion avec question ouverte
-- Section Sources (liste numérotée avec titres originaux + URLs)
-- Section "Pour aller plus loin" (3-5 ressources complémentaires)
-- Disclaimer en italique
-
-### Titres des sources
-- Toujours conservés dans leur langue originale, sans traduction
-
-### Texte du post LinkedIn
-- Court, accrocheur, donne envie de lire l'article
-- Inclut 2-3 hashtags pertinents
-- Termine par une question ou un appel à réaction
-
-### Prompt image
-- Descriptif en anglais pour Gemini (Nano Banana)
-- Style : illustration conceptuelle, pas de texte dans l'image
-- Lié au thème principal de l'article
 
 ## Output Notion
 
