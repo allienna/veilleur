@@ -2,6 +2,33 @@
 
 Effectue les étapes suivantes dans l'ordre :
 
+## 0.5 Feedback métriques
+
+Vérifie s'il y a un article récent sans métriques :
+
+```bash
+uv run python3 scripts/track_metrics.py --latest-untracked
+```
+
+Si un article sans métriques est trouvé (champ `date` non null) :
+- Affiche : "📊 Ton post du {DATE} ({TITLE}) — combien de likes, commentaires, reposts ?"
+- Attend la réponse de l'utilisateur
+- Enregistre les métriques :
+
+```bash
+uv run python3 scripts/track_metrics.py {DATE} --likes {L} --comments {C} --reposts {R}
+```
+
+Puis affiche les insights d'engagement :
+
+```bash
+uv run python3 scripts/metrics_insights.py --for-generate
+```
+
+Si le script retourne du texte, affiche-le. Ces insights guident le choix de l'angle narratif à l'étape 3.
+
+Si aucun article sans métriques (champ `date` null), passe directement à l'étape 1.
+
 ## 1. Chargement et filtrage des sources
 
 Détermine la date cible :

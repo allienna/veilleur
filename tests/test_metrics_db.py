@@ -159,5 +159,47 @@ class TestTrackMetricsCsv(unittest.TestCase):
         self.assertEqual(result['imported'], 2)
 
 
+class TestGetLatestUntrackedInfo(unittest.TestCase):
+    """Tests for get_latest_untracked_info()."""
+
+    def setUp(self):
+        self.tmpdir = Path(tempfile.mkdtemp())
+        self.db_path = self.tmpdir / 'test_metrics.db'
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
+    def _make_collection(self, dates):
+        """Retourne un mock de collection ChromaDB avec les dates données."""
+        from unittest.mock import MagicMock
+        collection = MagicMock()
+        collection.count.return_value = len(dates)
+        collection.get.return_value = {'metadatas': [{'date': d} for d in dates]}
+        return collection
+
+    def test_returns_date_and_metadata_when_untracked(self):
+        from track_metrics import get_latest_untracked_info
+        collection = self._make_collection(['2099-06-01'])
+        result = get_latest_untracked_info(db_path=self.db_path, collection=collection)
+        self.assertEqual(result['date'], '2099-06-01')
+        self.assertIn('title', result)
+        self.assertIn('themes', result)
+
+    def test_returns_null_date_when_all_tracked(self):
+        from track_metrics import get_latest_untracked_info
+        collection = self._make_collection(['2099-06-01'])
+        # Insert metrics so the article is considered tracked
+        upsert_metrics('2099-06-01', 'Title', 'IA', likes=5, db_path=self.db_path)
+        result = get_latest_untracked_info(db_path=self.db_path, collection=collection)
+        self.assertIsNone(result['date'])
+        self.assertIn('message', result)
+
+    def test_returns_null_date_when_collection_empty(self):
+        from track_metrics import get_latest_untracked_info
+        collection = self._make_collection([])
+        result = get_latest_untracked_info(db_path=self.db_path, collection=collection)
+        self.assertIsNone(result['date'])
+
+
 if __name__ == '__main__':
     unittest.main()

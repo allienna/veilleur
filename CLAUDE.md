@@ -67,6 +67,7 @@ Utilise les scripts dans `scripts/` pour les opérations déterministes. Cela é
 - `uv run python3 scripts/search_history.py "query" [--limit N]` — Recherche sémantique dans l'historique des articles
 - `uv run python3 scripts/track_metrics.py DATE --likes N --comments N --reposts N` — Saisie des métriques LinkedIn d'un post
 - `uv run python3 scripts/track_metrics.py --import-csv fichier.csv` — Import CSV des métriques (backfill)
+- `uv run python3 scripts/track_metrics.py --latest-untracked` — Retourne en JSON le dernier article sans métriques (`date`, `title`, `themes`, ou `date: null` + `message` si aucun)
 - `uv run python3 scripts/track_metrics.py --list` — Liste les métriques récentes
 - `uv run python3 scripts/metrics_insights.py` — Rapport d'insights engagement (thèmes, tendances)
 - `uv run python3 scripts/metrics_insights.py --for-generate` — Insights formatés pour injection dans /generate

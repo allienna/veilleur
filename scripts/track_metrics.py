@@ -34,6 +34,16 @@ def resolve_article_metadata(date):
     return 'Sans titre', 'Autre'
 
 
+def get_latest_untracked_info(db_path=None, collection=None):
+    """Retourne les infos du dernier article sans métriques, ou None."""
+    from metrics_db import get_latest_without_metrics
+    date = get_latest_without_metrics(db_path=db_path, collection=collection)
+    if date:
+        title, themes = resolve_article_metadata(date)
+        return {"date": date, "title": title, "themes": themes}
+    return {"date": None, "message": "Tous les articles ont des métriques"}
+
+
 def import_csv(filepath):
     """Importe les métriques depuis un fichier CSV."""
     results = []
@@ -65,9 +75,13 @@ if __name__ == '__main__':
     parser.add_argument('--show', action='store_true', help='Afficher les métriques existantes')
     parser.add_argument('--list', action='store_true', help='Lister les métriques récentes')
     parser.add_argument('--import-csv', type=str, help='Importer depuis un CSV')
+    parser.add_argument('--latest-untracked', action='store_true',
+                        help='JSON du dernier article sans métriques (date, title, themes)')
     args = parser.parse_args()
 
-    if args.import_csv:
+    if args.latest_untracked:
+        result = get_latest_untracked_info()
+    elif args.import_csv:
         result = import_csv(args.import_csv)
     elif args.list:
         result = get_all_metrics()
