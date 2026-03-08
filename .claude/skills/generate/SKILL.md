@@ -20,7 +20,7 @@ Follow these steps in order:
 Check if there's a recent article without metrics:
 
 ```bash
-uv run python3 scripts/track_metrics.py --latest-untracked
+just metrics-untracked
 ```
 
 If an article without metrics is found (`date` field is not null):
@@ -29,13 +29,13 @@ If an article without metrics is found (`date` field is not null):
 - Record the metrics:
 
 ```bash
-uv run python3 scripts/track_metrics.py {DATE} --likes {L} --comments {C} --reposts {R}
+just metrics {DATE} {LIKES} {COMMENTS} {REPOSTS}
 ```
 
 Then display engagement insights:
 
 ```bash
-uv run python3 scripts/metrics_insights.py --for-generate
+just insights-for-generate
 ```
 
 If the script returns text, display it. These insights guide the narrative angle selection in step 3.
@@ -45,7 +45,7 @@ If no article without metrics (`date` field is null), skip to step 1.
 ## 1. Load and filter sources
 
 ```bash
-uv run python3 scripts/load_sources.py {DATE}
+just sources {DATE}
 ```
 
 This script returns JSON with filtered sources (sponsors removed, duplicates eliminated, grouped by theme).
@@ -55,7 +55,7 @@ Display a summary of kept and filtered sources, then ask for confirmation before
 ## 1.5 Trend detection
 
 ```bash
-uv run python3 scripts/detect_trends.py {DATE}
+just detect-trends {DATE}
 ```
 
 If trends are detected (clusters with score > 0), display clusters with scores and newsletters.
@@ -65,10 +65,10 @@ If no trends (e.g. single newsletter), skip to step 2.
 ## 2. Read selected source content
 
 ```bash
-uv run python3 scripts/read_content.py {DATE} 0 1 2 3 ...
+just read-content {DATE} 0 1 2 3 ...
 ```
 
-Pass the `index` field values from each kept source (from the `load_sources.py` JSON output). The script returns the first 3000 characters of each source.
+Pass the `index` field values from each kept source (from the `just sources` JSON output). The script returns the first 3000 characters of each source.
 
 ## 3. Narrative selection
 
@@ -97,7 +97,7 @@ Create `data/output/` directory if it doesn't exist.
 ## 5.5 Index to history
 
 ```bash
-uv run python3 scripts/index_article.py {DATE}
+just index {DATE}
 ```
 
 Non-blocking: if indexing fails, display a warning and continue to step 6.

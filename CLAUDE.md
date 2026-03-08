@@ -56,23 +56,34 @@ uv run python3 scripts/load_sources.py DATE
 
 To install dependencies: `uv sync`
 
-## Utility scripts
+## Justfile recipes
 
-Use scripts in `scripts/` for deterministic operations. This avoids reinventing data reading on each run.
+Use `just` recipes for all operations. Run `just` to see available recipes.
 
-- `uv run python3 scripts/load_sources.py DATE` — Load and filter daily sources, returns JSON on stdout (sources sorted by theme, sponsors filtered)
-- `uv run python3 scripts/read_content.py DATE 0 2 5` — Read full content of sources at given indices (0-indexed from the full list)
-- `uv run python3 scripts/index_article.py DATE` — Index the day's article in ChromaDB (vector search)
-- `uv run python3 scripts/index_all.py` — Index all existing articles (backfill)
-- `uv run python3 scripts/search_history.py "query" [--limit N]` — Semantic search in article history
-- `uv run python3 scripts/track_metrics.py DATE --likes N --comments N --reposts N` — Record LinkedIn post metrics
-- `uv run python3 scripts/track_metrics.py --import-csv file.csv` — CSV metrics import (backfill)
-- `uv run python3 scripts/track_metrics.py --latest-untracked` — Returns JSON of latest article without metrics (`date`, `title`, `themes`, or `date: null` + `message` if none)
-- `uv run python3 scripts/track_metrics.py --list` — List recent metrics
-- `uv run python3 scripts/metrics_insights.py` — Engagement insights report (themes, trends)
-- `uv run python3 scripts/metrics_insights.py --for-generate` — Insights formatted for /generate injection
+### Sources & generation
+- `just sources [DATE]` — Load and filter daily sources, returns JSON on stdout
+- `just read-content DATE 0 2 5` — Read full content of sources at given indices
+- `just detect-trends [DATE]` — Detect cross-newsletter trends
 
-Rule: always use these scripts rather than writing inline code to read JSON files.
+### History & search
+- `just index [DATE]` — Index the day's article in ChromaDB
+- `just index-all` — Index all existing articles (backfill)
+- `just search "query" [LIMIT]` — Semantic search in article history
+
+### LinkedIn metrics
+- `just metrics DATE LIKES COMMENTS REPOSTS` — Record LinkedIn post metrics
+- `just metrics-show DATE` — Show metrics for a given date
+- `just metrics-list` — List recent metrics
+- `just metrics-untracked` — Find latest article without recorded metrics
+- `just metrics-import FILE` — CSV metrics import (backfill)
+- `just insights` — Engagement insights report (themes, trends)
+- `just insights-for-generate` — Insights formatted for /generate injection
+
+### Tests
+- `just test` — Run all tests
+- `just test-file FILE` — Run tests for a specific file
+
+Rule: always use `just` recipes rather than calling scripts directly.
 
 ## Notion output
 

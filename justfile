@@ -26,6 +26,10 @@ sources DATE="":
 read-content DATE +INDICES:
     uv run python3 scripts/read_content.py {{ DATE }} {{ INDICES }}
 
+# Detect cross-newsletter trends for a given date (DATE=YYYY-MM-DD, defaults to today)
+detect-trends DATE="":
+    uv run python3 scripts/detect_trends.py {{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }}
+
 # ── History & search ──────────────────────────────────────────────
 
 # Index an article into ChromaDB (DATE=YYYY-MM-DD, defaults to today)
@@ -65,6 +69,10 @@ metrics-import CSV:
 # Show engagement insights report (themes, trends, recommendations)
 insights:
     uv run python3 scripts/metrics_insights.py
+
+# Show engagement insights formatted for /generate injection
+insights-for-generate:
+    uv run python3 scripts/metrics_insights.py --for-generate
 
 # ── Tests ─────────────────────────────────────────────────────────
 

@@ -11,7 +11,7 @@ Target date is `$ARGUMENTS` if provided, otherwise today's date (YYYY-MM-DD).
 ## Execution
 
 ```bash
-uv run python3 scripts/load_sources.py {DATE}
+just sources {DATE}
 ```
 
 ## Display
