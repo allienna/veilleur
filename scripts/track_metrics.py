@@ -35,7 +35,11 @@ def resolve_article_metadata(date):
 
 
 def get_latest_untracked_info(db_path=None, collection=None):
-    """Return info for the most recent article without metrics, or None."""
+    """Return info for the most recent article without metrics.
+
+    Returns a dict with 'date', 'title', 'themes' if found,
+    or {'date': None, 'message': ...} if all articles are tracked.
+    """
     from metrics_db import get_latest_without_metrics
     date = get_latest_without_metrics(db_path=db_path, collection=collection)
     if date:
@@ -76,7 +80,7 @@ if __name__ == '__main__':
     parser.add_argument('--list', action='store_true', help='List recent metrics')
     parser.add_argument('--import-csv', type=str, help='Import from a CSV file')
     parser.add_argument('--latest-untracked', action='store_true',
-                        help='JSON of the most recent article without metrics (date, title, themes)')
+                        help='JSON of the latest article without metrics: {date, title, themes} or {date: null, message} if all tracked')
     args = parser.parse_args()
 
     if args.latest_untracked:

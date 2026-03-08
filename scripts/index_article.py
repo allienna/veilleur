@@ -76,7 +76,7 @@ def get_collection(persist_directory=None):
 
 def index_article(target_date, persist_directory=None, output_directory=None):
     """Index an article by date. Idempotent via upsert on ID = date."""
-    output_dir = output_directory or Path(__file__).parent.parent / 'data' / 'output'
+    output_dir = Path(output_directory) if output_directory is not None else Path(__file__).parent.parent / 'data' / 'output'
     filepath = output_dir / f"{target_date}-article.md"
 
     if not filepath.exists():
