@@ -20,18 +20,19 @@ from index_article import get_collection
 def search_articles(query, limit=5, persist_directory=None):
     """Recherche sémantique dans les articles indexés."""
     collection = get_collection(persist_directory)
+    total = collection.count()
 
-    if collection.count() == 0:
-        return {"query": query, "results": [], "total_indexed": 0}
+    if total == 0 or limit <= 0:
+        return {"query": query, "results": [], "total_indexed": total}
 
     results = collection.query(
         query_texts=[query],
-        n_results=min(limit, collection.count()),
+        n_results=min(limit, total),
         include=['documents', 'metadatas', 'distances'],
     )
 
     formatted = []
-    for i, doc_id in enumerate(results['ids'][0]):
+    for i in range(len(results['ids'][0])):
         metadata = results['metadatas'][0][i]
         distance = results['distances'][0][i]
         document = results['documents'][0][i]
@@ -47,7 +48,7 @@ def search_articles(query, limit=5, persist_directory=None):
     return {
         "query": query,
         "results": formatted,
-        "total_indexed": collection.count(),
+        "total_indexed": total,
     }
 
 
