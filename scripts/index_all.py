@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-veilleur — Indexation de tous les articles existants dans ChromaDB.
+veilleur — Index all existing articles into ChromaDB.
 
 Usage:
     python3 scripts/index_all.py
 
-Output: JSON sur stdout avec le résumé de l'indexation.
+Output: JSON on stdout with an indexing summary.
 """
 
 import json
@@ -18,7 +18,7 @@ from index_article import index_article
 
 
 def index_all():
-    """Indexe tous les articles existants dans data/output/."""
+    """Index all existing articles in data/output/."""
     output_dir = Path(__file__).parent.parent / 'data' / 'output'
 
     if not output_dir.exists():

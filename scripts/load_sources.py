@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-veilleur — Lecture et filtrage des sources du jour.
+veilleur — Load and filter today's sources.
 
 Usage:
     python3 scripts/load_sources.py 2026-03-07
-    python3 scripts/load_sources.py  # date du jour par défaut
+    python3 scripts/load_sources.py  # defaults to today's date
 
-Output: JSON sur stdout avec les sources filtrées et classées.
+Output: JSON on stdout with filtered and ranked sources.
 """
 
 import json
@@ -16,24 +16,24 @@ import sys
 from datetime import date
 from pathlib import Path
 
-# Domaines à filtrer (marketing, sponsors, tracking)
+# Domains to filter out (marketing, sponsors, tracking)
 SKIP_DOMAINS = [
     'plaid.com', 'go.clerk.com', 'webinars.atlassian.com',
     'advertise.tldr.tech', 'refer.tldr.tech', 'hub.sparklp.co',
     'email.beehiivstatus.com', 'beehiivstatus.com',
 ]
 
-# Mots-clés dans l'URL ou le titre indiquant du contenu sponsorisé/promo
+# Keywords in URL or title indicating sponsored/promotional content
 SPONSOR_KEYWORDS = ['sponsor', 'Sponsor', 'paid', 'whitepaper', 'webinar']
 
-# Mots-clés dans le contenu indiquant une page meta/promo (pas un article)
+# Keywords in content indicating a meta/promo page (not a real article)
 META_KEYWORDS = [
     'hidden tracker', 'tracking pixel',
     'the newsletter platform built for',
     'subscribe to our newsletter',
 ]
 
-# Thèmes par ordre de priorité — mots-clés plus spécifiques
+# Themes in priority order — more specific keywords listed first
 THEME_KEYWORDS = {
     'IA': [
         ' ai ', 'llm', 'gpt', 'claude', 'anthropic', 'openai', 'gemini',
@@ -63,29 +63,29 @@ THEME_KEYWORDS = {
     ],
 }
 
-# Contenu minimum pour être considéré comme un vrai article
+# Minimum content length to be considered a real article
 MIN_CONTENT_LENGTH = 500
 
 
 def extract_title(title: str, content: str) -> str:
-    """Extrait le titre depuis le champ title ou depuis le contenu."""
+    """Extract the title from the title field or from the content."""
     if title and title.strip():
         return title.strip()
 
     if not content:
         return 'Sans titre'
 
-    # Chercher "Title: ..." dans le contenu (format Jina Reader)
+    # Look for "Title: ..." in content (Jina Reader format)
     match = re.search(r'^Title:\s*(.+)$', content, re.MULTILINE)
     if match:
         return match.group(1).strip()
 
-    # Chercher un heading markdown
+    # Look for a markdown heading
     match = re.search(r'^#{1,3}\s+(.+)$', content, re.MULTILINE)
     if match:
         return match.group(1).strip()
 
-    # Première ligne non-vide
+    # First non-empty line
     for line in content.split('\n'):
         line = line.strip()
         if line and not line.startswith('http') and len(line) > 10:
@@ -95,8 +95,8 @@ def extract_title(title: str, content: str) -> str:
 
 
 def detect_theme(title: str, content: str) -> str:
-    """Détecte le thème principal d'un lien (titre + contenu, pas l'URL)."""
-    # Nettoyer le contenu : retirer les URLs pour éviter les faux positifs
+    """Detect the main theme of a link (title + content, not the URL)."""
+    # Clean content: strip URLs to avoid false positives
     clean_content = re.sub(r'https?://\S+', '', content[:1500])
     text = f" {title} {clean_content} ".lower()
     for theme, keywords in THEME_KEYWORDS.items():
@@ -106,22 +106,22 @@ def detect_theme(title: str, content: str) -> str:
 
 
 def is_filtered(url: str, title: str, content: str) -> tuple[bool, str]:
-    """Détecte si un lien doit être filtré. Retourne (filtered, reason)."""
-    # Domaines bloqués
+    """Check whether a link should be filtered out. Returns (filtered, reason)."""
+    # Blocked domains
     if any(domain in url for domain in SKIP_DOMAINS):
         return True, 'domaine bloqué'
 
-    # Mots-clés sponsor dans URL ou titre
+    # Sponsor keywords in URL or title
     text = f"{url} {title}"
     if any(kw in text for kw in SPONSOR_KEYWORDS):
         return True, 'sponsor'
 
-    # Contenu meta/promo
+    # Meta/promo content
     content_lower = content[:500].lower()
     if any(kw in content_lower for kw in META_KEYWORDS):
         return True, 'meta/promo'
 
-    # Contenu trop court (tracking pixel, redirects, etc.)
+    # Content too short (tracking pixel, redirects, etc.)
     if len(content) < MIN_CONTENT_LENGTH:
         return True, f'contenu trop court ({len(content)} chars)'
 
@@ -129,7 +129,7 @@ def is_filtered(url: str, title: str, content: str) -> tuple[bool, str]:
 
 
 def load_sources(target_date: str) -> dict:
-    """Charge et filtre les sources pour une date donnée."""
+    """Load and filter sources for a given date."""
     data_dir = Path(__file__).parent.parent / 'data' / 'raw'
     pattern = str(data_dir / f"{target_date}-newsletter-*.json")
     files = sorted(glob.glob(pattern))
@@ -170,11 +170,11 @@ def load_sources(target_date: str) -> dict:
                 'has_content': len(content) >= MIN_CONTENT_LENGTH,
             })
 
-    # Séparer les sources utiles et filtrées
+    # Separate kept and filtered sources
     kept = [l for l in all_links if not l['filtered']]
     filtered = [l for l in all_links if l['filtered']]
 
-    # Trier par thème (IA en premier)
+    # Sort by theme (IA first)
     theme_order = {'IA': 0, 'Leadership': 1, 'Data': 2, 'Tech': 3, 'Autre': 4}
     kept.sort(key=lambda x: theme_order.get(x['theme'], 99))
 

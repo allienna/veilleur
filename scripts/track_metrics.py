@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-veilleur — Saisie et import des métriques LinkedIn.
+veilleur — Enter and import LinkedIn metrics.
 
 Usage:
     python3 scripts/track_metrics.py 2026-03-07 --likes 42 --comments 8 --reposts 3
@@ -8,7 +8,7 @@ Usage:
     python3 scripts/track_metrics.py --import-csv metrics.csv
     python3 scripts/track_metrics.py --list
 
-Output: JSON sur stdout.
+Output: JSON on stdout.
 """
 
 import argparse
@@ -23,7 +23,7 @@ from index_article import parse_article
 
 
 def resolve_article_metadata(date):
-    """Résout le titre et les thèmes depuis le fichier article."""
+    """Resolve the title and themes from the article file."""
     output_dir = Path(__file__).parent.parent / 'data' / 'output'
     filepath = output_dir / f"{date}-article.md"
 
@@ -35,7 +35,7 @@ def resolve_article_metadata(date):
 
 
 def get_latest_untracked_info(db_path=None, collection=None):
-    """Retourne les infos du dernier article sans métriques, ou None."""
+    """Return info for the most recent article without metrics, or None."""
     from metrics_db import get_latest_without_metrics
     date = get_latest_without_metrics(db_path=db_path, collection=collection)
     if date:
@@ -45,7 +45,7 @@ def get_latest_untracked_info(db_path=None, collection=None):
 
 
 def import_csv(filepath):
-    """Importe les métriques depuis un fichier CSV."""
+    """Import metrics from a CSV file."""
     results = []
     with open(filepath, newline='', encoding='utf-8') as f:
         reader = csv.DictReader(f)
@@ -66,17 +66,17 @@ def import_csv(filepath):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Saisie des métriques LinkedIn')
-    parser.add_argument('date', nargs='?', help='Date de l\'article (YYYY-MM-DD)')
+    parser = argparse.ArgumentParser(description='Track LinkedIn metrics')
+    parser.add_argument('date', nargs='?', help='Article date (YYYY-MM-DD)')
     parser.add_argument('--likes', type=int, default=None)
     parser.add_argument('--comments', type=int, default=None)
     parser.add_argument('--reposts', type=int, default=None)
     parser.add_argument('--impressions', type=int, default=None)
-    parser.add_argument('--show', action='store_true', help='Afficher les métriques existantes')
-    parser.add_argument('--list', action='store_true', help='Lister les métriques récentes')
-    parser.add_argument('--import-csv', type=str, help='Importer depuis un CSV')
+    parser.add_argument('--show', action='store_true', help='Show existing metrics')
+    parser.add_argument('--list', action='store_true', help='List recent metrics')
+    parser.add_argument('--import-csv', type=str, help='Import from a CSV file')
     parser.add_argument('--latest-untracked', action='store_true',
-                        help='JSON du dernier article sans métriques (date, title, themes)')
+                        help='JSON of the most recent article without metrics (date, title, themes)')
     args = parser.parse_args()
 
     if args.latest_untracked:

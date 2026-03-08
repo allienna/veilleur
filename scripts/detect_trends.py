@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-veilleur — Détection de tendances cross-newsletters.
+veilleur — Cross-newsletter trend detection.
 
 Usage:
     python3 scripts/detect_trends.py 2026-03-07
-    python3 scripts/detect_trends.py  # date du jour par défaut
+    python3 scripts/detect_trends.py  # defaults to today's date
 
-Output: JSON sur stdout avec les clusters de tendances et scores.
+Output: JSON on stdout with trend clusters and scores.
 """
 
 import glob as globmod

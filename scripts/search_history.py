@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-veilleur — Recherche sémantique dans l'historique des articles.
+veilleur — Semantic search in article history.
 
 Usage:
     python3 scripts/search_history.py "query" [--limit N]
 
-Output: JSON sur stdout avec les résultats de recherche.
+Output: JSON on stdout with search results.
 """
 
 import argparse
@@ -18,7 +18,7 @@ from index_article import get_collection
 
 
 def search_articles(query, limit=5, persist_directory=None):
-    """Recherche sémantique dans les articles indexés."""
+    """Semantic search in indexed articles."""
     collection = get_collection(persist_directory)
     total = collection.count()
 
@@ -53,9 +53,9 @@ def search_articles(query, limit=5, persist_directory=None):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Recherche dans les articles')
-    parser.add_argument('query', help='Requête de recherche')
-    parser.add_argument('--limit', type=int, default=5, help='Nombre max de résultats')
+    parser = argparse.ArgumentParser(description='Search in articles')
+    parser.add_argument('query', help='Search query')
+    parser.add_argument('--limit', type=int, default=5, help='Maximum number of results')
     args = parser.parse_args()
 
     result = search_articles(args.query, limit=args.limit)

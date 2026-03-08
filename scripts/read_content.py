@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-veilleur — Lecture du contenu complet de sources sélectionnées.
+veilleur — Read the full content of selected sources.
 
 Usage:
     python3 scripts/read_content.py 2026-03-07 0 2 5 8
-    # Lit le contenu des sources aux indices 0, 2, 5, 8 (0-indexed)
+    # Reads the content of sources at indices 0, 2, 5, 8 (0-indexed)
 
-Output: Contenu markdown de chaque source sur stdout.
+Output: Markdown content of each source on stdout.
 """
 
 import json
@@ -16,7 +16,7 @@ from pathlib import Path
 
 
 def read_content(target_date: str, indices: list[int]) -> None:
-    """Affiche le contenu des sources aux indices donnés."""
+    """Print the content of sources at the given indices."""
     data_dir = Path(__file__).parent.parent / 'data' / 'raw'
     pattern = str(data_dir / f"{target_date}-newsletter-*.json")
     files = sorted(glob.glob(pattern))
@@ -25,7 +25,7 @@ def read_content(target_date: str, indices: list[int]) -> None:
         print(f"Aucun fichier trouvé pour {target_date}", file=sys.stderr)
         sys.exit(1)
 
-    # Charger tous les liens (même logique que load_sources, sans filtrage)
+    # Load all links (same logic as load_sources, without filtering)
     all_links = []
     seen_urls = set()
 
@@ -57,7 +57,7 @@ def read_content(target_date: str, indices: list[int]) -> None:
         print()
         print(content[:3000])
         if len(content) > 3000:
-            print(f"\n... [tronqué, {len(content)} chars au total]")
+            print(f"\n... [truncated, {len(content)} chars total]")
         print()
 
 

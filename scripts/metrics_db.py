@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-veilleur — Couche d'accès à la base de métriques LinkedIn.
+veilleur — Data access layer for the LinkedIn metrics database.
 """
 
 import sqlite3
@@ -10,7 +10,7 @@ from pathlib import Path
 DEFAULT_DB_PATH = Path(__file__).parent.parent / 'data' / 'metrics.db'
 
 def get_db(db_path=None):
-    """Ouvre la connexion SQLite et crée la table si nécessaire."""
+    """Open the SQLite connection and create the table if needed."""
     db = str(db_path or DEFAULT_DB_PATH)
     Path(db).parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(db)
@@ -33,7 +33,7 @@ def get_db(db_path=None):
 
 
 def upsert_metrics(date, title, themes, likes=0, comments=0, reposts=0, impressions=0, db_path=None):
-    """Insère ou met à jour les métriques d'un article."""
+    """Insert or update the metrics for an article."""
     conn = get_db(db_path)
     now = datetime.now().isoformat()
 
@@ -64,7 +64,7 @@ def upsert_metrics(date, title, themes, likes=0, comments=0, reposts=0, impressi
 
 
 def get_metrics(date, db_path=None):
-    """Retourne les métriques d'un article par date, ou None."""
+    """Return the metrics for an article by date, or None."""
     conn = get_db(db_path)
     row = conn.execute("SELECT * FROM metrics WHERE date = ?", (date,)).fetchone()
     conn.close()
@@ -74,7 +74,7 @@ def get_metrics(date, db_path=None):
 
 
 def get_all_metrics(limit=30, db_path=None):
-    """Retourne les métriques récentes, ordonnées par date décroissante."""
+    """Return recent metrics, ordered by descending date."""
     conn = get_db(db_path)
     rows = conn.execute(
         "SELECT * FROM metrics ORDER BY date DESC LIMIT ?", (limit,)
@@ -84,13 +84,13 @@ def get_all_metrics(limit=30, db_path=None):
 
 
 def get_latest_without_metrics(db_path=None, collection=None):
-    """Retourne la date du dernier article indexé sans métriques enregistrées.
+    """Return the date of the most recent indexed article with no recorded metrics.
 
-    Cherche dans ChromaDB les articles qui n'ont pas de ligne dans la table metrics,
-    ou dont les métriques sont toutes à 0.
+    Looks in ChromaDB for articles that have no row in the metrics table,
+    or whose metrics are all zero.
 
-    Un objet de collection ChromaDB peut être passé en paramètre (pour les tests) ;
-    sinon, la collection est récupérée via index_article.get_collection().
+    A ChromaDB collection object can be passed in (for tests);
+    otherwise the collection is retrieved via index_article.get_collection().
     """
     if collection is None:
         import sys
