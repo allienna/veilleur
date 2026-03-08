@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Unit and integration tests for index_article.py."""
 
-import json
 import shutil
 import sys
 import tempfile
@@ -89,11 +88,11 @@ class TestParseArticle(unittest.TestCase):
 
     def test_extracts_themes_ia(self):
         parsed = parse_article(self._write(SAMPLE_ARTICLE))
-        self.assertIn('IA', parsed['themes'])
+        self.assertIn('IA', parsed['themes'].split(','))
 
     def test_extracts_themes_leadership(self):
         parsed = parse_article(self._write(LEADERSHIP_ARTICLE))
-        self.assertIn('Leadership', parsed['themes'])
+        self.assertIn('Leadership', parsed['themes'].split(','))
 
     def test_counts_sources(self):
         parsed = parse_article(self._write(SAMPLE_ARTICLE))
@@ -144,38 +143,12 @@ class TestIndexArticle(unittest.TestCase):
 
     def _index(self, target_date=None):
         """Run index_article with patched paths."""
-        from unittest.mock import patch
         target_date = target_date or self.test_date
-        with patch('index_article.Path') as mock_path:
-            # Make Path(__file__).parent.parent resolve to our tmpdir
-            mock_path.return_value = mock_path
-            mock_path.__truediv__ = Path.__truediv__
-            # Simpler: just patch the output dir lookup
-        # Actually, let's patch at a higher level
-        import index_article as mod
-        original_parent = Path(mod.__file__).parent.parent
-        output_path = self.output_dir / f"{target_date}-article.md"
-
-        # Patch the output dir construction
-        with patch.object(Path, '__truediv__', wraps=Path.__truediv__):
-            # Direct approach: write file where the script expects it
-            pass
-
-        # Simplest approach: use the real function but copy file to expected location
-        # and use persist_directory for ChromaDB isolation
-        expected_dir = original_parent / 'data' / 'output'
-        expected_file = expected_dir / f"{target_date}-article.md"
-
-        expected_dir.mkdir(parents=True, exist_ok=True)
-        expected_file.write_text(
-            (self.output_dir / f"{target_date}-article.md").read_text(),
-            encoding='utf-8'
+        return index_article(
+            target_date,
+            persist_directory=self.chromadir,
+            output_directory=self.output_dir,
         )
-
-        try:
-            return mod.index_article(target_date, persist_directory=self.chromadir)
-        finally:
-            expected_file.unlink(missing_ok=True)
 
     def test_index_creates_entry(self):
         self._write_article(SAMPLE_ARTICLE)
@@ -195,8 +168,11 @@ class TestIndexArticle(unittest.TestCase):
         self.assertEqual(collection.count(), 1)
 
     def test_index_missing_file(self):
-        import index_article as mod
-        result = mod.index_article("2099-12-31", persist_directory=self.chromadir)
+        result = index_article(
+            "2099-12-31",
+            persist_directory=self.chromadir,
+            output_directory=self.output_dir,
+        )
         self.assertIn('error', result)
 
     def test_index_metadata(self):
@@ -223,7 +199,7 @@ class TestIndexArticle(unittest.TestCase):
         collection = get_collection(self.chromadir)
         self.assertEqual(collection.count(), 1)
         result = collection.get(ids=[self.test_date], include=['metadatas'])
-        self.assertIn('Leadership', result['metadatas'][0]['themes'])
+        self.assertIn('Leadership', result['metadatas'][0]['themes'].split(','))
 
 
 if __name__ == '__main__':
