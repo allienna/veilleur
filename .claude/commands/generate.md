@@ -70,6 +70,14 @@ Un prompt en anglais pour Gemini (Nano Banana) :
 
 Crée le dossier `data/output/` s'il n'existe pas.
 
+## 5.5 Indexation dans l'historique
+
+```bash
+uv run python3 scripts/index_article.py {DATE}
+```
+
+Non-bloquant : si l'indexation échoue, affiche un avertissement puis continue vers l'étape 6.
+
 ## 6. Push Notion
 
 Via le MCP Notion, crée une page dans la base "Veille LinkedIn" avec :
