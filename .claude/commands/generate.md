@@ -11,7 +11,7 @@ Détermine la date cible :
 Lance le script de chargement :
 
 ```bash
-python3 scripts/load_sources.py {DATE}
+uv run python3 scripts/load_sources.py {DATE}
 ```
 
 Ce script retourne un JSON avec les sources filtrées (sponsors retirés, doublons supprimés, classement par thème).
@@ -21,7 +21,7 @@ Affiche un résumé des sources retenues et filtrées, puis demande confirmation
 ## 1.5 Détection de tendances
 
 ```bash
-python3 scripts/detect_trends.py {DATE}
+uv run python3 scripts/detect_trends.py {DATE}
 ```
 
 Si des tendances sont détectées (clusters avec score > 0), affiche les clusters avec scores et newsletters.
@@ -33,7 +33,7 @@ Si aucune tendance (ex: une seule newsletter), passe à l'étape 2.
 Une fois les sources validées, lis leur contenu complet avec :
 
 ```bash
-python3 scripts/read_content.py {DATE} 0 1 2 3 ...
+uv run python3 scripts/read_content.py {DATE} 0 1 2 3 ...
 ```
 
 Passe les valeurs du champ `index` de chaque source retenue (issues du JSON de `load_sources.py`). Le script retourne les 3000 premiers caractères de chaque source.
