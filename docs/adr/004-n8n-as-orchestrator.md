@@ -11,7 +11,7 @@ The project needs an automated pipeline to: monitor a Gmail inbox for newsletter
 
 Use [n8n](https://n8n.io) running in Docker as the workflow orchestrator for email ingestion and data extraction.
 
-The setup is defined in `n8n/docker-compose.yml` with a volume mount mapping the local `data/` directory into the container. The workflow itself is exported as `n8n/workflow-veilleur.json`.
+The setup is defined in `n8n/docker-compose.yml`. The compose file mounts a host `data` directory (configured as an absolute path) into the container at `/data/veilleur`, and workflows write JSON outputs under `/data/veilleur/raw`, which corresponds to `data/raw/` on the host. The workflow itself is exported as `n8n/workflow-veilleur.json`.
 
 ## Arguments for this approach
 
@@ -19,7 +19,7 @@ The setup is defined in `n8n/docker-compose.yml` with a volume mount mapping the
 2. **Gmail integration built-in** — OAuth2-based email trigger, no custom IMAP code
 3. **HTTP nodes for Jina Reader** — direct API calls without custom scripting
 4. **File system write** — writes JSON directly to mounted volume, no intermediate service needed
-5. **Self-hosted via Docker** — runs locally, no cloud dependency, full data control
+5. **Self-hosted via Docker** — no third-party orchestration SaaS; workflows integrate with external services (Gmail, Jina Reader) while keeping orchestration and local file writes under our control
 6. **Workflow as code** — exportable JSON workflow can be version-controlled
 
 ## Arguments against
