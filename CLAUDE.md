@@ -62,6 +62,7 @@ Use `just` recipes for all operations. Run `just` to see available recipes.
 
 ### Sources & generation
 - `just sources [DATE]` — Load and filter daily sources, returns JSON on stdout
+- `just add-link DATE URL` — Add a manually found link (fetches via Jina Reader, saved to `data/raw/DATE-newsletter-manual.json`)
 - `just read-content DATE 0 2 5` — Read full content of sources at given indices
 - `just detect-trends [DATE]` — Detect cross-newsletter trends
 
