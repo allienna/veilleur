@@ -64,20 +64,33 @@ const displayLabel = tagLabel.replace(/-/g, ' ');
 ---
 
 <BaseLayout title={`Tag : ${displayLabel}`}>
-  {/* Hero header */}
-  <section class="bg-slate-900 text-white">
-    <div class="max-w-6xl mx-auto px-6 py-16 md:py-20">
-      <p class="text-sm font-medium text-amber-400 uppercase tracking-widest mb-3">Tag</p>
-      <h1 class="text-4xl md:text-5xl font-black tracking-tight capitalize">{displayLabel}</h1>
-      <p class="text-slate-400 mt-3 text-lg">
-        {matchedArticles.length} article{matchedArticles.length !== 1 ? 's' : ''}
-        {matchedFiches.length > 0 && ` · ${matchedFiches.length} fiche${matchedFiches.length !== 1 ? 's' : ''}`}
-      </p>
+  {/* Hero with image */}
+  <section class="w-full bg-slate-200">
+    <div class="aspect-[16/9] w-full max-h-[50vh] relative overflow-hidden">
+      <img
+        src={`${base}/images/tags.png`}
+        alt={`Tag : ${displayLabel}`}
+        class="w-full h-full object-cover"
+        width="1600"
+        height="900"
+        loading="eager"
+      />
+      <div class="absolute inset-0 bg-gradient-to-t from-background-dark/80 to-transparent"></div>
     </div>
   </section>
 
+  {/* Title card — overlapping hero */}
+  <div class="max-w-6xl mx-auto px-4 -mt-24 relative z-10 bg-background-light rounded-t-3xl pt-12 pb-8">
+    <p class="text-sm font-medium text-amber-500 uppercase tracking-widest mb-3">Tag</p>
+    <h1 class="text-4xl md:text-5xl font-black tracking-tight capitalize text-slate-900">{displayLabel}</h1>
+    <p class="text-slate-500 mt-3 text-lg">
+      {matchedArticles.length} article{matchedArticles.length !== 1 ? 's' : ''}
+      {matchedFiches.length > 0 && ` · ${matchedFiches.length} fiche${matchedFiches.length !== 1 ? 's' : ''}`}
+    </p>
+  </div>
+
   {/* Content */}
-  <div class="max-w-6xl mx-auto px-6 py-16">
+  <div class="max-w-6xl mx-auto px-6 py-12">
     {matchedArticles.length > 0 && (
       <section aria-labelledby="articles-heading">
         <div class="flex items-center justify-between border-b border-slate-200 pb-6 mb-10">
