@@ -52,20 +52,27 @@ const pageTitle = title === 'Le Veilleur' ? title : `${title} — Le Veilleur`;
       <slot />
     </main>
 
-    <footer class="bg-slate-900 text-slate-400 py-12 px-4">
-      <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-        <div class="flex items-center gap-4">
+    <footer class="bg-slate-900 text-slate-400 py-6 px-4 md:px-20">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+        <a href={base} class="flex items-center gap-4 hover:opacity-90 transition-opacity">
           <div class="h-8 w-8 bg-primary/20 rounded-full flex items-center justify-center text-base">
             🦉
           </div>
-          <span class="font-bold text-white tracking-widest uppercase">Le Veilleur</span>
+          <span class="font-bold text-white tracking-widest uppercase text-sm">Le Veilleur</span>
+        </a>
+
+        <nav class="flex items-center gap-6 text-sm" aria-label="Navigation secondaire">
+          <a href={`${base}/confidentialite`} class="hover:text-white transition-colors">Confidentialité</a>
+          <a href={`${base}/mentions-legales`} class="hover:text-white transition-colors">Mentions Légales</a>
+          <a href={`${base}/newsletter`} class="hover:text-white transition-colors">Newsletter</a>
+          <a href={`${base}/contact`} class="hover:text-white transition-colors">Contact</a>
+        </nav>
+
+        <div class="flex items-center gap-3">
+          <a href={`${base}/rss.xml`} class="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors" aria-label="Flux RSS">
+            <svg class="w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 24 24"><circle cx="6.18" cy="17.82" r="2.18"/><path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83c0-8.59-6.97-15.56-15.56-15.56zm0 5.66v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"/></svg>
+          </a>
         </div>
-        <p class="text-sm text-center md:text-left">
-          Veille tech quotidienne par Aurélien Allienne — SFEIR Lille
-        </p>
-      </div>
-      <div class="max-w-7xl mx-auto mt-8 pt-8 border-t border-white/5 text-center text-xs">
-        © {new Date().getFullYear()} Le Veilleur. Tous droits réservés.
       </div>
     </footer>
 
