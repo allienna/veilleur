@@ -43,6 +43,12 @@
 }
 
 @layer utilities {
+  /* Hide ## Sources and ## Pour aller plus loin from rendered markdown (shown as styled cards instead) */
+  .article-intro > h2#sources,
+  .article-intro > h2#sources ~ * {
+    display: none;
+  }
+
   .article-intro>p:first-child {
     font-weight: 300 !important;
     font-style: italic;

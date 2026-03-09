@@ -9,9 +9,43 @@ interface Props {
   themes: string[];
   sources?: number;
   image?: string;
+  body?: string;
 }
 
-const { title, date, themes, sources, image } = Astro.props;
+const { title, date, themes, sources, image, body } = Astro.props;
+
+// Parse sources and "pour aller plus loin" from markdown body
+function parseLinks(text: string): { title: string; url: string; domain: string }[] {
+  const links: { title: string; url: string; domain: string }[] = [];
+  const regex = /[-\d.]+\s*\[(.+?)\]\((.+?)\)/gm;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    const url = match[2];
+    let domain = '';
+    try { domain = new URL(url).hostname.replace('www.', ''); } catch {}
+    links.push({ title: match[1], url, domain });
+  }
+  return links;
+}
+
+let sourceLinks: { title: string; url: string; domain: string }[] = [];
+let furtherLinks: { title: string; url: string; domain: string; description: string }[] = [];
+if (body) {
+  const sourcesMatch = body.match(/## Sources\n([\s\S]*?)(?=\n## |$)/);
+  if (sourcesMatch) sourceLinks = parseLinks(sourcesMatch[1]);
+
+  const furtherMatch = body.match(/## Pour aller plus loin\n([\s\S]*?)(?=\n## |$)/);
+  if (furtherMatch) {
+    const regex = /[-\d.]+\s*\[(.+?)\]\((.+?)\)(?:\s*—\s*(.+))?/gm;
+    let match;
+    while ((match = regex.exec(furtherMatch[1])) !== null) {
+      const url = match[2];
+      let domain = '';
+      try { domain = new URL(url).hostname.replace('www.', ''); } catch {}
+      furtherLinks.push({ title: match[1], url, domain, description: match[3]?.trim() || '' });
+    }
+  }
+}
 
 const base = import.meta.env.BASE_URL;
 const dateStr = date.toISOString().slice(0, 10);
@@ -85,29 +119,63 @@ const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veille
     </div>
 
     {/* Sources section */}
-    {linkedFiches.length > 0 && (
-      <section class="mt-16 pt-10 border-t-2 border-primary/20">
+    {sourceLinks.length > 0 && (
+      <section class="mt-12 pt-10 border-t border-slate-200">
         <h2 class="text-2xl font-black mb-6 uppercase tracking-widest text-slate-900">Sources analysées</h2>
         <div class="grid gap-4">
-          {linkedFiches.map((fiche) => (
+          {sourceLinks.map((source) => (
             <a
-              href={`${base}/fiches/${fiche.slug}`}
+              href={source.url}
+              target="_blank"
+              rel="noopener noreferrer"
               class="group flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:border-primary transition-all focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <div class="flex items-center gap-4 min-w-0">
-                <span class="text-primary bg-primary/10 p-2 rounded-lg text-xl shrink-0" aria-hidden="true">📄</span>
+                <span class="text-primary bg-primary/10 p-2 rounded-lg text-xl shrink-0" aria-hidden="true">🔗</span>
                 <div class="min-w-0">
                   <p class="font-bold group-hover:text-primary transition-colors truncate">
-                    {fiche.data.title}
+                    {source.title}
                   </p>
-                  <p class="text-xs text-slate-500 uppercase truncate">{fiche.data.theme} • {fiche.data.url}</p>
+                  <p class="text-xs text-slate-500 uppercase truncate">Lien externe • {source.domain}</p>
                 </div>
               </div>
-              <span class="text-slate-400 group-hover:translate-x-1 transition-transform shrink-0 ml-4" aria-hidden="true">→</span>
+              <span class="text-slate-400 group-hover:translate-x-1 transition-transform shrink-0 ml-4" aria-hidden="true">↗</span>
             </a>
           ))}
         </div>
       </section>
     )}
+
+    {/* Pour aller plus loin */}
+    {furtherLinks.length > 0 && (
+      <section class="mt-12 pt-8 border-t border-slate-200">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold text-slate-900">Pour aller plus loin</h2>
+          <span class="text-primary text-xl" aria-hidden="true">📚</span>
+        </div>
+        <div class="divide-y divide-primary/20">
+          {furtherLinks.map((link) => (
+            <div class="py-5">
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="font-bold text-primary hover:underline"
+              >
+                {link.title}
+              </a>
+              {link.description && (
+                <p class="text-sm text-slate-500 mt-1">— {link.description}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {/* Disclaimer */}
+    <p class="mt-16 pt-8 border-t border-slate-200 text-sm italic text-slate-400">
+      Cet article a été rédigé en m'appuyant sur une IA pour m'aider à synthétiser et structurer ma veille. Les idées, le choix des sources et la relecture restent les miens.
+    </p>
   </article>
 </BaseLayout>
