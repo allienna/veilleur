@@ -24,7 +24,7 @@ sources DATE="":
 
 # Add a manually found link to the day's sources (fetches via Jina Reader)
 add-link DATE URL:
-    uv run python3 scripts/add_link.py {{ DATE }} {{ URL }}
+    uv run python3 scripts/add_link.py {{ DATE }} "{{ URL }}"
 
 # Read full content of sources at given indices (e.g. just read-content 2026-03-07 0 1 2)
 read-content DATE +INDICES:

@@ -7,13 +7,13 @@ Usage:
     python3 scripts/add_link.py DATE URL [--title "Optional title"]
 """
 
+import argparse
 import json
 import sys
 import urllib.request
-from datetime import date
 from pathlib import Path
 
-DATA_RAW = Path("data/raw")
+DATA_RAW = Path(__file__).parent.parent / "data" / "raw"
 JINA_BASE = "https://r.jina.ai/"
 NEWSLETTER_NAME = "Manuel"
 
@@ -23,39 +23,22 @@ def fetch_content(url: str) -> str:
     jina_url = JINA_BASE + url
     req = urllib.request.Request(
         jina_url,
-        headers={"Accept": "text/plain", "User-Agent": "veilleur/1.0"},
+        headers={"Accept": "text/markdown", "User-Agent": "veilleur/1.0"},
     )
     with urllib.request.urlopen(req, timeout=30) as resp:
         return resp.read().decode("utf-8")
 
 
 def main():
-    args = sys.argv[1:]
+    parser = argparse.ArgumentParser(
+        description="Add a manually found link to the day's sources."
+    )
+    parser.add_argument("date", help="Target date (YYYY-MM-DD)")
+    parser.add_argument("url", help="URL to add")
+    parser.add_argument("--title", default="", help="Optional title override")
+    args = parser.parse_args()
 
-    # Parse --title flag
-    title_override = None
-    filtered_args = []
-    i = 0
-    while i < len(args):
-        if args[i] == "--title" and i + 1 < len(args):
-            title_override = args[i + 1]
-            i += 2
-        else:
-            filtered_args.append(args[i])
-            i += 1
-
-    if len(filtered_args) < 2:
-        print(
-            json.dumps(
-                {"error": "Usage: add_link.py DATE URL [--title 'Optional title']"}
-            )
-        )
-        sys.exit(1)
-
-    target_date = filtered_args[0]
-    url = filtered_args[1]
-
-    manual_path = DATA_RAW / f"{target_date}-newsletter-manual.json"
+    manual_path = DATA_RAW / f"{args.date}-newsletter-manual.json"
 
     # Load existing manual file or start fresh
     if manual_path.exists():
@@ -64,27 +47,27 @@ def main():
     else:
         data = {
             "newsletter": NEWSLETTER_NAME,
-            "received_at": f"{target_date}T00:00:00Z",
+            "received_at": f"{args.date}T00:00:00Z",
             "links": [],
         }
 
     # Check for duplicate URL
     existing_urls = {link["url"] for link in data["links"]}
-    if url in existing_urls:
-        print(json.dumps({"status": "skipped", "message": "URL already added", "url": url}))
+    if args.url in existing_urls:
+        print(json.dumps({"status": "skipped", "message": "URL already added", "url": args.url}))
         return
 
     # Fetch content
-    print(f"Fetching {url} ...", file=sys.stderr)
+    print(f"Fetching {args.url} ...", file=sys.stderr)
     try:
-        content = fetch_content(url)
+        content = fetch_content(args.url)
     except Exception as e:
-        print(json.dumps({"error": f"Failed to fetch content: {e}", "url": url}))
+        print(json.dumps({"error": f"Failed to fetch content: {e}", "url": args.url}))
         sys.exit(1)
 
     link = {
-        "url": url,
-        "title": title_override or "",
+        "url": args.url,
+        "title": args.title,
         "content": content,
     }
     data["links"].append(link)
@@ -97,7 +80,7 @@ def main():
         json.dumps(
             {
                 "status": "added",
-                "url": url,
+                "url": args.url,
                 "file": str(manual_path),
                 "total_manual_links": len(data["links"]),
                 "content_length": len(content),
