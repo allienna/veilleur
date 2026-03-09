@@ -19,7 +19,7 @@ __pycache__/
 site/dist/
 site/.astro/
 site/node_modules/
-site/src/data/
+# site/src/data/ JSON files are tracked (placeholders for build)
 
 # Secrets
 .env
