@@ -1,21 +1,29 @@
 # Template — Structure de l'article
 
 ```markdown
+---
+title: "{Titre percutant}"
+date: YYYY-MM-DD
+themes: [IA]
+sources: N
+image: YYYY-MM-DD.png
+---
+
 # {Titre percutant}
 
 {Intro : 3-4 lignes, question provocante + fait/chiffre}
 
-**{Sous-titre section 1}**
+### {Sous-titre section 1}
 
 {Contenu avec références inline [[1](url)]}
 
-**{Sous-titre section 2}**
+### {Sous-titre section 2}
 
 {Contenu lié narrativement à la section précédente [[2](url)]}
 
 > {Citation forte si pertinente}
 
-**{Sous-titre section N}**
+### {Sous-titre section N}
 
 {Contenu}
 
