@@ -30,6 +30,10 @@ read-content DATE +INDICES:
 detect-trends DATE="":
     uv run python3 scripts/detect_trends.py {{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }}
 
+# Generate article image from prompt via Gemini Imagen API (DATE=YYYY-MM-DD, defaults to today)
+generate-image DATE="" *FLAGS:
+    uv run python3 scripts/generate_image.py {{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }} {{ FLAGS }}
+
 # ── History & search ──────────────────────────────────────────────
 
 # Index an article into ChromaDB (DATE=YYYY-MM-DD, defaults to today)
