@@ -56,6 +56,8 @@ uv run python3 scripts/load_sources.py DATE
 ```
 
 To install dependencies: `uv sync`
+To install local image generation deps: `uv sync --extra image`
+To install Gemini fallback deps: `uv sync --extra gemini`
 
 ## Justfile recipes
 
@@ -65,7 +67,8 @@ Use `just` recipes for all operations. Run `just` to see available recipes.
 - `just sources [DATE]` — Load and filter daily sources, returns JSON on stdout
 - `just read-content DATE 0 2 5` — Read full content of sources at given indices
 - `just detect-trends [DATE]` — Detect cross-newsletter trends
-- `just generate-image [DATE]` — Generate article image via Gemini Imagen API (requires `GOOGLE_API_KEY`)
+- `just generate-image [DATE] [--backend local|gemini]` — Generate article image (default: local SDXL-Turbo, fallback: `--backend gemini` requires `GOOGLE_API_KEY`)
+- `just download-image-model` — Pre-download the SDXL-Turbo model (~3.5GB) for local generation
 
 ### History & search
 - `just index [DATE]` — Index the day's article in ChromaDB

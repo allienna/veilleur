@@ -1,60 +1,44 @@
-"""Generate an article image from the daily image prompt using Gemini image generation."""
+"""Generate an article image from the daily image prompt.
+
+Supports local generation (SDXL-Turbo) and Gemini API as a fallback.
+"""
 
 import json
-import os
 import sys
 from pathlib import Path
 
 DATA_OUTPUT = Path("data/output")
-MODEL = "gemini-3.1-flash-image-preview"
-ASPECT_RATIO = "16:9"
-
-
-def list_available_models(api_key):
-    """List available Gemini image models via the API."""
-    try:
-        from google import genai
-
-        client = genai.Client(api_key=api_key)
-        models = client.models.list()
-        image_models = [m for m in models if "imagen" in m.name or "image" in m.name]
-        print(
-            json.dumps(
-                {
-                    "models": [m.name for m in image_models],
-                    "all_models": [m.name for m in models],
-                },
-                indent=2,
-            )
-        )
-    except Exception as e:
-        print(json.dumps({"error": str(e)}))
-        sys.exit(1)
+DEFAULT_BACKEND = "local"
 
 
 def main():
+    # Parse --backend flag
+    backend_name = DEFAULT_BACKEND
+    args = sys.argv[1:]
+    filtered_args = []
+    i = 0
+    while i < len(args):
+        if args[i] == "--backend" and i + 1 < len(args):
+            backend_name = args[i + 1]
+            i += 2
+        elif args[i] == "--download-model":
+            from image_backends.local_backend import download_model
 
-    if "--list-models" in sys.argv:
-        api_key = os.environ.get("GOOGLE_API_KEY")
-        if not api_key:
-            print(
-                json.dumps(
-                    {
-                        "error": "GOOGLE_API_KEY environment variable is not set. Get your key at https://aistudio.google.com/apikey"
-                    }
-                )
-            )
-            sys.exit(1)
-        list_available_models(api_key)
-        return
+            download_model()
+            return
+        else:
+            filtered_args.append(args[i])
+            i += 1
 
-    date = sys.argv[1] if len(sys.argv) > 1 else None
-    force = "--force" in sys.argv
+    force = "--force" in filtered_args
+    date = next((a for a in filtered_args if not a.startswith("--")), None)
 
     if not date:
         print(
             json.dumps(
-                {"error": "Usage: generate_image.py DATE [--force] [--list-models]"}
+                {
+                    "error": "Usage: generate_image.py DATE [--force] [--backend local|gemini] [--download-model]"
+                }
             )
         )
         sys.exit(1)
@@ -86,56 +70,13 @@ def main():
         )
         sys.exit(1)
 
-    api_key = os.environ.get("GOOGLE_API_KEY")
-    if not api_key:
-        print(
-            json.dumps(
-                {
-                    "error": "GOOGLE_API_KEY environment variable is not set. "
-                    "Get your key at https://aistudio.google.com/apikey",
-                    "date": date,
-                }
-            )
-        )
-        sys.exit(1)
-
     prompt = prompt_path.read_text().strip()
 
     try:
-        from google import genai
-        from google.genai import types
+        from image_backends import get_backend
 
-        client = genai.Client(api_key=api_key)
-        response = client.models.generate_content(
-            model=MODEL,
-            contents=f"Generate an image based on this description: {prompt}",
-            config=types.GenerateContentConfig(
-                response_modalities=["IMAGE"],
-                image_config=types.ImageConfig(
-                    aspect_ratio=ASPECT_RATIO,
-                ),
-            ),
-        )
-
-        image_saved = False
-        for part in response.candidates[0].content.parts:
-            if part.inline_data is not None:
-                image = part.as_image()
-                image.save(str(output_path))
-                image_saved = True
-                break
-
-        if not image_saved:
-            print(
-                json.dumps(
-                    {
-                        "error": "No image in response (possibly blocked by safety filters)",
-                        "date": date,
-                        "model": MODEL,
-                    }
-                )
-            )
-            sys.exit(1)
+        backend = get_backend(backend_name)
+        metadata = backend.generate(prompt, str(output_path))
 
         print(
             json.dumps(
@@ -143,8 +84,8 @@ def main():
                     "status": "generated",
                     "path": str(output_path),
                     "date": date,
-                    "model": MODEL,
-                    "aspect_ratio": ASPECT_RATIO,
+                    "backend": backend_name,
+                    **metadata,
                 }
             )
         )
@@ -155,7 +96,7 @@ def main():
                 {
                     "error": str(e),
                     "date": date,
-                    "model": MODEL,
+                    "backend": backend_name,
                 }
             )
         )
