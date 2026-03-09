@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2;
+  }
+}
+
+@layer components {
+  .prose-veilleur a {
+    @apply text-navy-custom underline hover:text-primary transition-colors;
+  }
+
+  .prose-veilleur h1,
+  .prose-veilleur h2,
+  .prose-veilleur h3,
+  .prose-veilleur h4 {
+    @apply font-bold tracking-tight;
+  }
+
+  .prose-veilleur blockquote {
+    @apply border-l-4 border-primary pl-4 italic;
+  }
+}

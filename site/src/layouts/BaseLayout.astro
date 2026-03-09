@@ -1,0 +1,73 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Le Veilleur',
+  description = 'Veille technologique quotidienne — articles générés depuis les meilleures newsletters tech.',
+} = Astro.props;
+
+const base = import.meta.env.BASE_URL;
+const pageTitle = title === 'Le Veilleur' ? title : `${title} — Le Veilleur`;
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{pageTitle}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,900;1,700;1,900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/svg+xml" href={`${base}/placeholder-veilleur.svg`} />
+  </head>
+  <body class="bg-background-light font-sans text-slate-900 min-h-screen flex flex-col antialiased">
+
+    <header class="sticky top-0 z-50 bg-navy-custom text-white px-4 md:px-20 py-4 shadow-lg">
+      <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <a href={base} class="flex items-center gap-4 hover:opacity-90 transition-opacity">
+          <div class="h-10 w-10 bg-primary rounded-full flex items-center justify-center text-lg overflow-hidden">
+            🦉
+          </div>
+          <span class="text-xl font-black tracking-tighter uppercase">Le Veilleur</span>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-8" aria-label="Navigation principale">
+          <a href={base} class="text-sm font-medium hover:text-primary transition-colors">Articles</a>
+          <a href={`${base}/trends`} class="text-sm font-medium hover:text-primary transition-colors">Tendances</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="flex-1 w-full">
+      <slot />
+    </main>
+
+    <footer class="bg-navy-custom text-slate-400 py-12 px-4">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+        <div class="flex items-center gap-4">
+          <div class="h-8 w-8 bg-primary/20 rounded-full flex items-center justify-center text-base">
+            🦉
+          </div>
+          <span class="font-bold text-white tracking-widest uppercase">Le Veilleur</span>
+        </div>
+        <p class="text-sm text-center md:text-left">
+          Veille tech quotidienne par Aurélien Allienne — SFEIR Lille
+        </p>
+      </div>
+      <div class="max-w-7xl mx-auto mt-8 pt-8 border-t border-white/5 text-center text-xs">
+        © {new Date().getFullYear()} Le Veilleur. Tous droits réservés.
+      </div>
+    </footer>
+
+  </body>
+</html>
