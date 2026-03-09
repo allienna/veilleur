@@ -11,6 +11,15 @@
     @apply antialiased;
   }
 
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display;
+  }
+
   :focus-visible {
     @apply outline-none ring-2 ring-primary ring-offset-2;
   }
@@ -30,5 +39,14 @@
 
   .prose-veilleur blockquote {
     @apply border-l-4 border-primary pl-4 italic;
+  }
+}
+
+@layer utilities {
+  .article-intro>p:first-child {
+    font-weight: 300 !important;
+    font-style: italic;
+    font-size: 1.25rem;
+    color: theme('colors.slate.500');
   }
 }

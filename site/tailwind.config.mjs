@@ -4,6 +4,15 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      typography: {
+        DEFAULT: {
+          css: {
+            'blockquote p:first-of-type::before': { content: 'none' },
+            'blockquote p:last-of-type::after': { content: 'none' },
+            'blockquote p': { marginTop: '0', marginBottom: '0' },
+          },
+        },
+      },
       colors: {
         primary: '#f59f0a',
         'navy-custom': '#162d60',
@@ -11,10 +20,10 @@ export default {
         'background-dark': '#221c10',
       },
       fontFamily: {
-        display: ['"Work Sans"', 'sans-serif'],
+        display: ['"Poppins"', 'sans-serif'],
         sans: ['"Work Sans"', 'sans-serif'],
       },
     },
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/typography')],
 };

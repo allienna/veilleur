@@ -73,13 +73,14 @@ const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veille
 
     {/* Body */}
     <div class="prose prose-slate max-w-none text-lg leading-relaxed
-      prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-900
-      prose-h2:text-3xl prose-h2:pt-4 prose-h3:text-2xl
+      prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-900 
+      prose-h2:text-3xl prose-h2:pt-4 prose-h3:text-2xl prose-h3:pt-6 prose-h3:mt-2
       prose-a:text-primary prose-a:underline prose-a:decoration-primary/30 hover:prose-a:decoration-primary
       prose-strong:text-slate-900
-      prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-6 prose-blockquote:py-2 prose-blockquote:italic prose-blockquote:text-2xl prose-blockquote:font-light prose-blockquote:text-slate-600
+      prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:py-2 prose-blockquote:italic prose-blockquote:text-2xl prose-blockquote:font-light prose-blockquote:text-slate-600
       prose-p:text-slate-700 prose-p:leading-relaxed
-      prose-li:text-slate-700">
+      prose-li:text-slate-700
+      article-intro">
       <slot />
     </div>
 
