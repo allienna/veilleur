@@ -30,6 +30,14 @@ read-content DATE +INDICES:
 detect-trends DATE="":
     uv run python3 scripts/detect_trends.py {{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }}
 
+# Generate article image from prompt (DATE=YYYY-MM-DD, defaults to today, --backend local|gemini)
+generate-image DATE="" *FLAGS:
+    uv run python3 scripts/generate_image.py {{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }} {{ FLAGS }}
+
+# Pre-download the SDXL-Turbo model for local image generation
+download-image-model:
+    uv run python3 scripts/generate_image.py --download-model
+
 # ── History & search ──────────────────────────────────────────────
 
 # Index an article into ChromaDB (DATE=YYYY-MM-DD, defaults to today)

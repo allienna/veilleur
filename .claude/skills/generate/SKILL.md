@@ -94,7 +94,15 @@ The image prompt (see "Prompt image" section in the guide).
 Write all three files to `data/output/`.
 Create `data/output/` directory if it doesn't exist.
 
-## 5.5 Index to history
+## 5.5 Generate image
+
+```bash
+just generate-image {DATE}
+```
+
+Non-blocking: if image generation fails (missing API key, safety filter, API error), display a warning and continue.
+
+## 5.6 Index to history
 
 ```bash
 just index {DATE}

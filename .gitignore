@@ -8,5 +8,8 @@ n8n_data/
 .venv/
 __pycache__/
 
+# Secrets
+.env
+
 # OS
 .DS_Store

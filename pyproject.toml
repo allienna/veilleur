@@ -5,6 +5,18 @@ description = "Automated LinkedIn tech watch article generation"
 requires-python = ">=3.11"
 dependencies = [
     "chromadb>=1.0.0",
+    "Pillow>=11.0.0",
+]
+
+[project.optional-dependencies]
+image = [
+    "torch>=2.1.0",
+    "diffusers>=0.30.0",
+    "transformers>=4.40.0",
+    "accelerate>=0.30.0",
+]
+gemini = [
+    "google-genai>=1.0.0",
 ]
 
 [dependency-groups]
