@@ -37,7 +37,7 @@ Percutant, format LinkedIn — peut commencer par une question ou une affirmatio
 - Pas d'intro générique
 
 ### Sections
-- Sous-titres en gras, NON numérotés
+- Sous-titres en **H3** (`###`), NON numérotés
 - Liés par un fil narratif : chaque section s'enchaîne naturellement avec la suivante
 - Si une citation forte existe dans les sources, mets-la en blockquote
 
@@ -71,9 +71,61 @@ Toujours en italique à la fin :
 - 2-3 hashtags pertinents
 - Termine par une question ou un appel à réaction
 
+## Fiches de lecture
+
+Les fiches de lecture sont générées automatiquement lors de chaque `/generate` pour les 3 à 5 sources principales.
+
+### Format (`data/fiches/YYYY-MM-DD-{slug}.md`)
+
+Chaque fiche contient :
+
+1. **Front matter YAML** : titre original, date, URL source, auteurs (extraits du domaine ou du contenu), mots-clés (3-5), thème principal, tonalité, liste des articles qui l'utilisent
+2. **Traduction complète** : traduction intégrale en français du contenu source — fidèle, complète, lisible
+3. **Points clés** : 3 à 6 points extraits de la traduction
+4. **Pourquoi ça compte** : 1-2 phrases sur la pertinence pour la veille tech
+
+### Règles de traduction
+
+- Traduire intégralement, sans résumer — la fiche est un document de référence
+- Préserver la structure du texte original (sections, listes, citations)
+- Adapter les expressions idiomatiques naturellement
+- Conserver les termes techniques en anglais quand ils n'ont pas d'équivalent courant en français
+- Le slug est en kebab-case ASCII, max 60 caractères, dérivé du titre original
+
+### Tonalités possibles
+
+- `opinion` — article d'opinion ou billet de blog
+- `tutorial` — guide pratique ou how-to
+- `research` — étude, benchmark ou article académique
+- `news` — actualité ou annonce
+
 ## Prompt image
 
 - Descriptif en anglais pour Gemini (Nano Banana)
-- Style : illustration conceptuelle, moderne, épurée
 - Pas de texte dans l'image
 - Lié au thème principal de l'article
+- **Toujours mettre en scène le hibou mascotte "Le Veilleur"** dans une pose ou un contexte illustrant le sujet du jour
+
+### Bible du mascotte — Le Veilleur
+
+Personnage fixe à réutiliser dans chaque prompt image :
+
+> An expressive cartoon owl mascot called "Le Veilleur": deep navy blue body, large expressive amber eyes, small antenna on top of the head, white chest feathers. Animated cartoon style — think Pixar short or Saturday morning cartoon, colorful, dynamic, full of personality. The character is always the protagonist of the scene.
+
+**Format : scène de dessin animé**, pas un portrait de personnage. Le Veilleur est mis en scène dans un décor qui illustre les principaux topics de la newsletter du jour.
+
+La scène doit :
+- Représenter visuellement 2 à 3 sujets clés de l'article simultanément
+- Raconter quelque chose même sans texte — l'action, la posture, le décor font le message
+- Être dynamique et expressive, pas statique
+
+**Exemples de mise en scène par thème :**
+- Sécurité / bugs → le hibou en tenue de détective ou de hacker éthique, loupe à la main, entouré de bugs rouges qui s'enfuient
+- Architecture / agents → le hibou chef d'orchestre dirigeant des petits robots
+- Leadership / emploi → le hibou en réunion face à un tableau blanc rempli de flèches et de questions
+- IA générative → le hibou dans une salle de contrôle avec des écrans partout
+- Data → le hibou surfant sur une vague de graphiques et de pipelines
+
+**Format : 16:9 — toujours préciser `wide 16:9 aspect ratio` dans le prompt.**
+
+**Ne jamais inclure de texte dans l'image.**

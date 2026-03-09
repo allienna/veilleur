@@ -83,16 +83,68 @@ Generate three files following the writing guide (`writing-guide.md`):
 ### {DATE}-article.md
 The full article following the template structure (`article-template.md`).
 
+The file MUST start with the YAML front matter block:
+```yaml
+---
+title: "{Article title}"
+date: {DATE}
+themes: [{comma-separated list of main themes, e.g. IA, Leadership}]
+sources: {number of sources used}
+image: {DATE}.png
+---
+```
+Then the full article body.
+
 ### {DATE}-post.md
 The LinkedIn post text (see "Texte du post LinkedIn" section in the guide).
 
 ### {DATE}-image-prompt.md
 The image prompt (see "Prompt image" section in the guide).
 
+## 4.5 Fiches de lecture
+
+For each of the 3 to 5 main sources used in the article (not "pour aller plus loin"), generate a reading fiche and write it to `data/fiches/`.
+
+Create `data/fiches/` if it doesn't exist.
+
+For each source:
+- Derive a slug from the title: kebab-case, ASCII only, max 60 characters
+- Write file: `data/fiches/{DATE}-{slug}.md`
+
+Format:
+```yaml
+---
+title: "{Original title of the source}"
+date: {DATE}
+url: {source URL}
+authors: [{domain or author name extracted from URL or content}]
+keywords: [{3-5 keywords from the content}]
+theme: {main theme: IA | Leadership | Data | Tech}
+tone: {opinion | tutorial | research | news}
+used_in: ["{DATE}"]
+---
+
+## Traduction complète
+
+{Full translation of the source article into French. Use the full content already read in step 2. Be thorough — this is a reference document.}
+
+## Points clés
+
+- {key point 1}
+- {key point 2}
+- {key point 3}
+...
+
+## Pourquoi ça compte
+
+{1-2 sentences on why this source matters for tech watch.}
+```
+
 ## 5. Write to disk
 
-Write all three files to `data/output/`.
+Write all three article files to `data/output/`.
 Create `data/output/` directory if it doesn't exist.
+Fiches are written to `data/fiches/` (already handled in step 4.5).
 
 ## 5.5 Index to history
 

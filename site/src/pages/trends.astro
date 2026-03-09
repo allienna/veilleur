@@ -1,0 +1,173 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Gracefully read optional data files
+let themesOverTime: Record<string, Record<string, number>> | null = null;
+let metricsData: Array<{
+  date: string;
+  likes: number;
+  comments: number;
+  reposts: number;
+  title?: string;
+}> | null = null;
+
+try {
+  const themesModule = await import('../data/themes-over-time.json', {
+    assert: { type: 'json' },
+  }).catch(() => null);
+  if (themesModule) {
+    themesOverTime = themesModule.default as typeof themesOverTime;
+  }
+} catch {
+  // File absent — skip silently
+}
+
+try {
+  const metricsModule = await import('../data/metrics.json', {
+    assert: { type: 'json' },
+  }).catch(() => null);
+  if (metricsModule) {
+    metricsData = metricsModule.default as typeof metricsData;
+  }
+} catch {
+  // File absent — skip silently
+}
+
+type MetricsRow = NonNullable<typeof metricsData>[number];
+const topArticles: (MetricsRow & { score: number })[] = metricsData
+  ? [...metricsData]
+      .map((row) => ({
+        ...row,
+        score: row.likes + row.comments * 3 + row.reposts * 2,
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10)
+  : [];
+
+type ThemeSummary = { theme: string; total: number };
+const themeSummary: ThemeSummary[] = themesOverTime
+  ? Object.entries(themesOverTime)
+      .map(([theme, dateMap]) => ({
+        theme,
+        total: Object.values(dateMap).reduce((acc, v) => acc + v, 0),
+      }))
+      .sort((a, b) => b.total - a.total)
+  : [];
+
+const hasData = topArticles.length > 0 || themeSummary.length > 0;
+
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title="Tendances" description="Analyse des tendances thématiques et de l'engagement LinkedIn du Veilleur.">
+  <div class="w-full max-w-5xl px-6 py-12 mx-auto space-y-12">
+
+    <header class="pb-6 border-b border-slate-200">
+      <h1 class="text-3xl md:text-4xl font-black tracking-tight text-slate-900 mb-2">Tendances</h1>
+      <p class="text-slate-500">
+        Analyse de l'engagement LinkedIn et des thèmes récurrents dans la veille.
+      </p>
+    </header>
+
+    {!hasData && (
+      <div class="text-center py-20 bg-slate-100 rounded-xl">
+        <p class="text-5xl mb-4" aria-hidden="true">🦉</p>
+        <p class="text-lg font-semibold text-slate-700">Pas encore de données disponibles.</p>
+        <p class="text-sm text-slate-400 mt-2">
+          Les données seront disponibles après le premier export.
+        </p>
+      </div>
+    )}
+
+    {topArticles.length > 0 && (
+      <section aria-labelledby="engagement-heading">
+        <h2 id="engagement-heading" class="text-xl font-bold tracking-tight text-slate-900 mb-1">
+          Top articles par engagement
+        </h2>
+        <p class="text-sm text-slate-400 mb-6">
+          Score = likes + commentaires &times;3 + reposts &times;2
+        </p>
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-navy-custom text-white">
+                <th scope="col" class="text-left px-4 py-3 font-semibold rounded-tl-xl">#</th>
+                <th scope="col" class="text-left px-4 py-3 font-semibold">Date</th>
+                {topArticles.some((r) => r.title) && (
+                  <th scope="col" class="text-left px-4 py-3 font-semibold">Titre</th>
+                )}
+                <th scope="col" class="text-right px-4 py-3 font-semibold">Likes</th>
+                <th scope="col" class="text-right px-4 py-3 font-semibold">Comm.</th>
+                <th scope="col" class="text-right px-4 py-3 font-semibold">Reposts</th>
+                <th scope="col" class="text-right px-4 py-3 font-semibold rounded-tr-xl">Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {topArticles.map((row, i) => (
+                <tr class={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                  <td class="px-4 py-3 text-slate-400 font-mono">{i + 1}</td>
+                  <td class="px-4 py-3">
+                    <a
+                      href={`${base}/articles/${row.date}`}
+                      class="text-navy-custom hover:text-primary underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded"
+                    >
+                      {new Date(row.date + 'T00:00:00').toLocaleDateString('fr-FR', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </a>
+                  </td>
+                  {topArticles.some((r) => r.title) && (
+                    <td class="px-4 py-3 text-slate-600 max-w-xs truncate">{row.title ?? '—'}</td>
+                  )}
+                  <td class="px-4 py-3 text-right tabular-nums">{row.likes}</td>
+                  <td class="px-4 py-3 text-right tabular-nums">{row.comments}</td>
+                  <td class="px-4 py-3 text-right tabular-nums">{row.reposts}</td>
+                  <td class="px-4 py-3 text-right tabular-nums font-bold text-primary">{row.score}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    )}
+
+    {themeSummary.length > 0 && (
+      <section aria-labelledby="themes-heading">
+        <h2 id="themes-heading" class="text-xl font-bold tracking-tight text-slate-900 mb-6">
+          Thèmes les plus fréquents
+        </h2>
+        <ol class="space-y-3">
+          {themeSummary.map((item, i) => {
+            const maxTotal = themeSummary[0]?.total ?? 1;
+            const pct = Math.round((item.total / maxTotal) * 100);
+            return (
+              <li class="flex items-center gap-4">
+                <span class="text-sm text-slate-400 font-mono w-5 shrink-0 text-right">{i + 1}</span>
+                <div class="flex-1">
+                  <div class="flex items-center justify-between mb-1">
+                    <a
+                      href={`${base}/tags/${encodeURIComponent(item.theme.toLowerCase().replace(/\s+/g, '-'))}`}
+                      class="text-sm font-semibold text-slate-800 hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded"
+                    >
+                      {item.theme}
+                    </a>
+                    <span class="text-xs text-slate-400 ml-2">{item.total}</span>
+                  </div>
+                  <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      class="h-full bg-primary rounded-full transition-all"
+                      style={`width: ${pct}%`}
+                      role="presentation"
+                    />
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+    )}
+  </div>
+</BaseLayout>

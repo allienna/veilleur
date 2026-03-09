@@ -161,11 +161,12 @@ class TestComputeKeywordOverlap(unittest.TestCase):
 
 class TestBuildSimilarityGraph(unittest.TestCase):
 
-    def _make_source(self, index, title, newsletter, url=''):
+    def _make_source(self, index, title, newsletter, url='', publisher=None):
         return {
             'index': index,
             'title': title,
             'newsletter': newsletter,
+            'publisher': publisher or newsletter.lower().replace(' ', '-'),
             'url': url or f'https://example.com/{index}',
             'theme': 'IA',
         }
@@ -252,11 +253,12 @@ class TestGenerateClusterLabel(unittest.TestCase):
 
 class TestComputeTrendScore(unittest.TestCase):
 
-    def _make_source(self, index, title, newsletter, url=''):
+    def _make_source(self, index, title, newsletter, url='', publisher=None):
         return {
             'index': index,
             'title': title,
             'newsletter': newsletter,
+            'publisher': publisher or newsletter.lower().replace(' ', '-'),
             'url': url or f'https://example.com/{index}',
             'theme': 'IA',
         }

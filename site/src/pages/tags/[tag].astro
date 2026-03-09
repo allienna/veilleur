@@ -1,0 +1,148 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+
+export async function getStaticPaths() {
+  const [articles, fiches] = await Promise.all([
+    getCollection('articles'),
+    getCollection('fiches'),
+  ]);
+
+  // Collect all tags from articles (themes) and fiches (keywords + theme)
+  const tagMap = new Map<string, { articles: typeof articles; fiches: typeof fiches }>();
+
+  const addTag = (tag: string) => {
+    const key = tag.toLowerCase().replace(/\s+/g, '-');
+    if (!tagMap.has(key)) {
+      tagMap.set(key, { articles: [], fiches: [] });
+    }
+    return key;
+  };
+
+  for (const article of articles) {
+    for (const theme of article.data.themes) {
+      const key = addTag(theme);
+      tagMap.get(key)!.articles.push(article);
+    }
+  }
+
+  for (const fiche of fiches) {
+    const themeKey = addTag(fiche.data.theme);
+    tagMap.get(themeKey)!.fiches.push(fiche);
+
+    for (const kw of fiche.data.keywords) {
+      const key = addTag(kw);
+      tagMap.get(key)!.fiches.push(fiche);
+    }
+  }
+
+  return Array.from(tagMap.entries()).map(([tag, data]) => ({
+    params: { tag },
+    props: {
+      tagLabel: tag,
+      matchedArticles: data.articles.sort(
+        (a, b) => b.data.date.getTime() - a.data.date.getTime()
+      ),
+      matchedFiches: data.fiches,
+    },
+  }));
+}
+
+interface Props {
+  tagLabel: string;
+  matchedArticles: Awaited<ReturnType<typeof getCollection<'articles'>>>;
+  matchedFiches: Awaited<ReturnType<typeof getCollection<'fiches'>>>;
+}
+
+const { tagLabel, matchedArticles, matchedFiches } = Astro.props;
+
+const base = import.meta.env.BASE_URL;
+
+// Human-readable label from slug
+const displayLabel = tagLabel.replace(/-/g, ' ');
+---
+
+<BaseLayout title={`Tag : ${displayLabel}`}>
+  {/* Hero with image */}
+  <section class="w-full bg-slate-200">
+    <div class="aspect-[16/9] w-full max-h-[50vh] relative overflow-hidden">
+      <img
+        src={`${base}/images/tags.png`}
+        alt={`Tag : ${displayLabel}`}
+        class="w-full h-full object-cover"
+        width="1600"
+        height="900"
+        loading="eager"
+      />
+      <div class="absolute inset-0 bg-gradient-to-t from-background-dark/80 to-transparent"></div>
+    </div>
+  </section>
+
+  {/* Title card — overlapping hero */}
+  <div class="max-w-6xl mx-auto px-4 -mt-24 relative z-10 bg-background-light rounded-t-3xl pt-12 pb-8">
+    <p class="text-sm font-medium text-amber-500 uppercase tracking-widest mb-3">Tag</p>
+    <h1 class="text-4xl md:text-5xl font-black tracking-tight capitalize text-slate-900">{displayLabel}</h1>
+    <p class="text-slate-500 mt-3 text-lg">
+      {matchedArticles.length} article{matchedArticles.length !== 1 ? 's' : ''}
+      {matchedFiches.length > 0 && ` · ${matchedFiches.length} fiche${matchedFiches.length !== 1 ? 's' : ''}`}
+    </p>
+  </div>
+
+  {/* Content */}
+  <div class="max-w-6xl mx-auto px-6 py-12">
+    {matchedArticles.length > 0 && (
+      <section aria-labelledby="articles-heading">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-6 mb-10">
+          <h2 id="articles-heading" class="text-2xl md:text-3xl font-bold tracking-tight">Articles</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          {matchedArticles.map((article) => (
+            <ArticleCard
+              slug={article.slug}
+              title={article.data.title}
+              date={article.data.date}
+              themes={article.data.themes}
+              sources={article.data.sources}
+              image={article.data.image}
+            />
+          ))}
+        </div>
+      </section>
+    )}
+
+    {matchedFiches.length > 0 && (
+      <section aria-labelledby="fiches-heading" class={matchedArticles.length > 0 ? 'mt-16' : ''}>
+        <div class="flex items-center justify-between border-b border-slate-200 pb-6 mb-10">
+          <h2 id="fiches-heading" class="text-2xl md:text-3xl font-bold tracking-tight">Fiches sources</h2>
+        </div>
+        <ul class="space-y-3">
+          {matchedFiches.map((fiche) => (
+            <li>
+              <a
+                href={`${base}/fiches/${fiche.slug}`}
+                class="group flex items-start gap-3 p-5 rounded-xl border border-slate-200
+                  hover:border-amber-300 hover:bg-amber-50/50 transition-colors
+                  focus:outline-none focus:ring-2 focus:ring-amber-400"
+              >
+                <div class="flex-1 min-w-0">
+                  <p class="font-semibold text-slate-900 group-hover:text-slate-800">
+                    {fiche.data.title}
+                  </p>
+                  <p class="text-sm text-slate-500 truncate mt-1">{fiche.data.url}</p>
+                </div>
+                <span class="shrink-0 text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full self-start font-medium">
+                  {fiche.data.theme}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {matchedArticles.length === 0 && matchedFiches.length === 0 && (
+      <p class="text-slate-500 text-center py-20 text-lg">Aucun contenu trouvé pour ce tag.</p>
+    )}
+  </div>
+</BaseLayout>

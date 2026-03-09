@@ -94,7 +94,7 @@ def compute_keyword_overlap(kw_a: set[str], kw_b: set[str]) -> float:
 
 
 def build_similarity_graph(sources: list[dict], contents: dict[int, str]) -> dict[int, set[int]]:
-    """Build adjacency graph with edges between cross-newsletter similar sources."""
+    """Build adjacency graph with edges between cross-publisher similar sources."""
     n = len(sources)
     graph: dict[int, set[int]] = {i: set() for i in range(n)}
 
@@ -104,8 +104,8 @@ def build_similarity_graph(sources: list[dict], contents: dict[int, str]) -> dic
 
     for i in range(n):
         for j in range(i + 1, n):
-            # Only cross-newsletter comparisons
-            if sources[i]['newsletter'] == sources[j]['newsletter']:
+            # Only cross-publisher comparisons (same publisher = not a real trend)
+            if sources[i]['publisher'] == sources[j]['publisher']:
                 continue
 
             # Layer 1: URL match
@@ -175,7 +175,7 @@ def compute_trend_score(source_idx: int, sources: list[dict],
         if other_idx == source_idx:
             continue
         other = sources[other_idx]
-        if other['newsletter'] == src['newsletter']:
+        if other['publisher'] == src['publisher']:
             continue
 
         if norm_urls[other_idx] == norm_urls[source_idx]:
@@ -188,6 +188,19 @@ def compute_trend_score(source_idx: int, sources: list[dict],
         best_kw = max(best_kw, kw_ov)
 
     return min(1.0, best_url * 0.5 + best_title * 0.3 + best_kw * 0.2)
+
+
+def extract_publisher(filepath: str, target_date: str) -> str:
+    """Extract publisher name from filename, e.g. 'tldrnewsletter' from
+    '2026-03-09-newsletter-tldrnewsletter-1009.json'."""
+    stem = Path(filepath).stem  # e.g. '2026-03-09-newsletter-tldrnewsletter-1009'
+    prefix = f"{target_date}-newsletter-"
+    rest = stem[len(prefix):]  # e.g. 'tldrnewsletter-1009' or 'manual'
+    # Strip trailing 4-digit time suffix if present
+    parts = rest.rsplit('-', 1)
+    if len(parts) == 2 and parts[1].isdigit() and len(parts[1]) == 4:
+        return parts[0]
+    return rest
 
 
 def load_all_sources(target_date: str) -> tuple[list[dict], dict[int, str]]:
@@ -209,6 +222,7 @@ def load_all_sources(target_date: str) -> tuple[list[dict], dict[int, str]]:
             data = json.load(f)
 
         newsletter = data.get('newsletter', 'unknown')
+        publisher = extract_publisher(filepath, target_date)
         seen_in_newsletter: set[str] = set()
 
         for link in data.get('links', []):
@@ -232,6 +246,7 @@ def load_all_sources(target_date: str) -> tuple[list[dict], dict[int, str]]:
                 'url': url,
                 'title': title,
                 'newsletter': newsletter,
+                'publisher': publisher,
                 'theme': theme,
             })
             contents[idx] = content
@@ -268,9 +283,10 @@ def detect_trends(target_date: str) -> dict:
 
     for cluster_id, cluster in enumerate(clusters):
         cluster_sources = [sources[i] for i in cluster]
-        cluster_newsletters = sorted({s['newsletter'] for s in cluster_sources})
-        if len(cluster_newsletters) < 2:
+        cluster_publishers = sorted({s['publisher'] for s in cluster_sources})
+        if len(cluster_publishers) < 2:
             continue
+        cluster_newsletters = sorted({s['newsletter'] for s in cluster_sources})
 
         clustered_indices.update(cluster)
         label = generate_cluster_label(cluster_sources)
@@ -298,6 +314,7 @@ def detect_trends(target_date: str) -> dict:
             "label": label,
             "theme": theme,
             "score": cluster_score,
+            "publishers": cluster_publishers,
             "newsletters": cluster_newsletters,
             "sources": source_entries,
         })

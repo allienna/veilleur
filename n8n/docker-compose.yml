@@ -7,8 +7,8 @@ services:
       - "5678:5678"
     environment:
       - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=admin
-      - N8N_BASIC_AUTH_PASSWORD=veille2026
+      - N8N_BASIC_AUTH_USER=${N8N_AUTH_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_AUTH_PASSWORD:?Set N8N_AUTH_PASSWORD in .env}
       - GENERIC_TIMEZONE=Europe/Paris
       - TZ=Europe/Paris
       - N8N_RESTRICT_FILE_ACCESS_TO=/data/veilleur

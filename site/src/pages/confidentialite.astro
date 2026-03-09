@@ -1,0 +1,17 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+---
+
+<PageLayout title="Confidentialité" subtitle="Comment nous traitons vos données." image="confidentialite.png">
+  <h2>Données collectées</h2>
+  <p>Ce site est un site statique. Il ne collecte aucune donnée personnelle, ne dépose aucun cookie et n'utilise aucun outil de tracking ou d'analytics.</p>
+
+  <h2>Hébergement</h2>
+  <p>Ce site est hébergé sur <strong>GitHub Pages</strong> (GitHub, Inc.). GitHub peut collecter des données techniques (adresse IP, logs serveur) dans le cadre de l'hébergement. Consultez la <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer">politique de confidentialité de GitHub</a> pour plus d'informations.</p>
+
+  <h2>Polices web</h2>
+  <p>Ce site utilise des polices hébergées par <strong>Google Fonts</strong>. Le chargement de ces polices peut entraîner une connexion aux serveurs de Google. Consultez la <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">politique de confidentialité de Google</a>.</p>
+
+  <h2>Vos droits</h2>
+  <p>Aucune donnée personnelle n'étant collectée directement par ce site, il n'y a pas de traitement de données à caractère personnel à signaler. Pour toute question, vous pouvez nous contacter via la page <a href={`${import.meta.env.BASE_URL}/contact`}>Contact</a>.</p>
+</PageLayout>

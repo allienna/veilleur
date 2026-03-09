@@ -1,0 +1,28 @@
+---
+import { getCollection } from 'astro:content';
+import FicheLayout from '../../layouts/FicheLayout.astro';
+
+export async function getStaticPaths() {
+  const fiches = await getCollection('fiches');
+  return fiches.map((fiche) => ({
+    params: { slug: fiche.slug },
+    props: { fiche },
+  }));
+}
+
+const { fiche } = Astro.props;
+const { Content } = await fiche.render();
+---
+
+<FicheLayout
+  title={fiche.data.title}
+  date={fiche.data.date}
+  url={fiche.data.url}
+  authors={fiche.data.authors}
+  keywords={fiche.data.keywords}
+  theme={fiche.data.theme}
+  tone={fiche.data.tone}
+  used_in={fiche.data.used_in}
+>
+  <Content />
+</FicheLayout>

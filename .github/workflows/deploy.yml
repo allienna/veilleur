@@ -1,0 +1,93 @@
+name: Deploy site to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'data/output/**'
+      - 'data/fiches/**'
+      - 'data/site/**'
+      - 'site/**'
+      - 'scripts/export_site_data.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install Python dependencies
+        run: uv sync
+
+      - name: Export site data (ChromaDB + SQLite → JSON)
+        run: uv run python3 scripts/export_site_data.py
+
+      - name: Copy articles to Astro content
+        run: |
+          mkdir -p site/src/content/articles
+          find data/output -name '*-article.md' | while read f; do
+            base=$(basename "$f" -article.md)
+            cp "$f" "site/src/content/articles/${base}.md"
+          done
+
+      - name: Copy fiches to Astro content
+        run: |
+          mkdir -p site/src/content/fiches
+          if [ -d data/fiches ]; then
+            cp data/fiches/*.md site/src/content/fiches/ 2>/dev/null || true
+          fi
+
+      - name: Copy images to Astro public
+        run: |
+          mkdir -p site/public/images
+          if [ -d data/site/images ]; then
+            cp data/site/images/*.png site/public/images/ 2>/dev/null || true
+          fi
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Node dependencies
+        working-directory: site
+        run: npm install
+
+      - name: Build Astro site
+        working-directory: site
+        run: npm run build
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

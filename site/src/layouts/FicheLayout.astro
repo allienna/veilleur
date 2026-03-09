@@ -1,0 +1,130 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import TagPill from '../components/TagPill.astro';
+
+interface Props {
+  title: string;
+  date: Date;
+  url: string;
+  authors?: string[];
+  keywords: string[];
+  theme: string;
+  tone?: string;
+  used_in: string[];
+}
+
+const { title, date, url, authors, keywords, theme, tone, used_in } = Astro.props;
+
+const base = import.meta.env.BASE_URL;
+
+const formattedDate = date.toLocaleDateString('fr-FR', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+});
+
+const parentDate = used_in[0] ?? null;
+---
+
+<BaseLayout title={title}>
+  <div class="w-full max-w-4xl px-6 py-12 mx-auto">
+
+    {parentDate ? (
+      <a
+        href={`${base}/articles/${parentDate}`}
+        class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-primary transition-colors mb-8 focus:outline-none focus:ring-2 focus:ring-primary rounded"
+      >
+        ← Article du {new Date(parentDate + 'T00:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+      </a>
+    ) : (
+      <a
+        href={base}
+        class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-primary transition-colors mb-8 focus:outline-none focus:ring-2 focus:ring-primary rounded"
+      >
+        ← Retour aux articles
+      </a>
+    )}
+
+    <header class="mb-10 pb-8 border-b border-slate-200">
+      <div class="mb-3">
+        <TagPill tag={theme} />
+      </div>
+      <h1 class="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 leading-[1.1] tracking-tight mb-4">
+        {title}
+      </h1>
+
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-1.5 text-sm text-navy-custom hover:text-primary underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded mb-6"
+      >
+        🌐 Voir la source originale
+      </a>
+
+      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mt-4">
+        <div>
+          <dt class="text-slate-400 font-medium">Date</dt>
+          <dd class="text-slate-900">
+            <time datetime={date.toISOString().slice(0, 10)}>{formattedDate}</time>
+          </dd>
+        </div>
+
+        {authors && authors.length > 0 && (
+          <div>
+            <dt class="text-slate-400 font-medium">Auteur{authors.length > 1 ? 's' : ''}</dt>
+            <dd class="text-slate-900">{authors.join(', ')}</dd>
+          </div>
+        )}
+
+        {tone && (
+          <div>
+            <dt class="text-slate-400 font-medium">Ton</dt>
+            <dd class="text-slate-900 capitalize">{tone}</dd>
+          </div>
+        )}
+
+        {keywords.length > 0 && (
+          <div class="sm:col-span-2">
+            <dt class="text-slate-400 font-medium mb-2">Mots-clés</dt>
+            <dd class="flex flex-wrap gap-1.5">
+              {keywords.map((kw) => (
+                <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded font-medium">
+                  {kw}
+                </span>
+              ))}
+            </dd>
+          </div>
+        )}
+      </dl>
+    </header>
+
+    <div class="prose prose-lg max-w-none
+      prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-900
+      prose-a:text-navy-custom prose-a:underline hover:prose-a:text-primary
+      prose-strong:text-slate-900
+      prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-slate-600">
+      <slot />
+    </div>
+
+    {used_in.length > 0 && (
+      <aside class="mt-14 border-t border-slate-200 pt-8">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">
+          Utilisée dans
+        </h2>
+        <ul class="flex flex-wrap gap-3">
+          {used_in.map((articleDate) => (
+            <li>
+              <a
+                href={`${base}/articles/${articleDate}`}
+                class="text-sm text-navy-custom hover:text-primary underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded"
+              >
+                Article du {new Date(articleDate + 'T00:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    )}
+  </div>
+</BaseLayout>

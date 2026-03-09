@@ -1,0 +1,181 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import TagPill from '../components/TagPill.astro';
+import { getCollection } from 'astro:content';
+
+interface Props {
+  title: string;
+  date: Date;
+  themes: string[];
+  sources?: number;
+  image?: string;
+  body?: string;
+}
+
+const { title, date, themes, sources, image, body } = Astro.props;
+
+// Parse sources and "pour aller plus loin" from markdown body
+function parseLinks(text: string): { title: string; url: string; domain: string }[] {
+  const links: { title: string; url: string; domain: string }[] = [];
+  const regex = /[-\d.]+\s*\[(.+?)\]\((.+?)\)/gm;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    const url = match[2];
+    let domain = '';
+    try { domain = new URL(url).hostname.replace('www.', ''); } catch {}
+    links.push({ title: match[1], url, domain });
+  }
+  return links;
+}
+
+let sourceLinks: { title: string; url: string; domain: string }[] = [];
+let furtherLinks: { title: string; url: string; domain: string; description: string }[] = [];
+if (body) {
+  const sourcesMatch = body.match(/## Sources\n([\s\S]*?)(?=\n## |$)/);
+  if (sourcesMatch) sourceLinks = parseLinks(sourcesMatch[1]);
+
+  const furtherMatch = body.match(/## Pour aller plus loin\n([\s\S]*?)(?=\n## |$)/);
+  if (furtherMatch) {
+    const regex = /[-\d.]+\s*\[(.+?)\]\((.+?)\)(?:\s*—\s*(.+))?/gm;
+    let match;
+    while ((match = regex.exec(furtherMatch[1])) !== null) {
+      const url = match[2];
+      let domain = '';
+      try { domain = new URL(url).hostname.replace('www.', ''); } catch {}
+      furtherLinks.push({ title: match[1], url, domain, description: match[3]?.trim() || '' });
+    }
+  }
+}
+
+const base = import.meta.env.BASE_URL;
+const dateStr = date.toISOString().slice(0, 10);
+
+const allFiches = await getCollection('fiches');
+const linkedFiches = allFiches.filter((f) => f.data.used_in.includes(dateStr));
+
+const formattedDate = date.toLocaleDateString('fr-FR', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+});
+
+const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veilleur.svg`;
+---
+
+<BaseLayout title={title}>
+  {/* Hero image — full width with gradient overlay */}
+  <section class="w-full bg-slate-200">
+    <div class="aspect-[16/9] w-full max-h-[70vh] relative overflow-hidden">
+      <img
+        src={imageUrl}
+        alt={image ? title : 'Illustration Le Veilleur'}
+        class="w-full h-full object-cover"
+        width="1600"
+        height="900"
+        loading="eager"
+      />
+      <div class="absolute inset-0 bg-gradient-to-t from-background-dark/80 to-transparent"></div>
+    </div>
+  </section>
+
+  {/* Article card — overlapping the hero */}
+  <article class="max-w-[800px] mx-auto px-4 -mt-24 relative z-10 bg-background-light rounded-t-3xl pt-12 pb-20">
+
+    {/* Tags */}
+    {themes.length > 0 && (
+      <div class="flex flex-wrap gap-2 mb-6">
+        {themes.map((theme) => <TagPill tag={theme} />)}
+      </div>
+    )}
+
+    {/* Title */}
+    <h1 class="text-4xl md:text-6xl font-black leading-[1.1] mb-6 text-slate-900 tracking-tight">
+      {title}
+    </h1>
+
+    {/* Author bar */}
+    <div class="flex items-center gap-4 mb-10 pb-10 border-b border-slate-200">
+      <img src={`${base}/images/avatar.jpg`} alt="Aurélien Allienne" class="size-12 rounded-full object-cover shrink-0" />
+      <div>
+        <p class="font-bold text-slate-900">Aurélien Allienne</p>
+        <p class="text-sm text-slate-500">
+          Publié le <time datetime={dateStr}>{formattedDate}</time>
+          {sources !== undefined && <span> • {sources} source{sources > 1 ? 's' : ''}</span>}
+        </p>
+      </div>
+    </div>
+
+    {/* Body */}
+    <div class="prose prose-slate max-w-none text-lg leading-relaxed
+      prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-900 
+      prose-h2:text-3xl prose-h2:pt-4 prose-h3:text-2xl prose-h3:pt-6 prose-h3:mt-2
+      prose-a:text-primary prose-a:underline prose-a:decoration-primary/30 hover:prose-a:decoration-primary
+      prose-strong:text-slate-900
+      prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:py-2 prose-blockquote:italic prose-blockquote:text-2xl prose-blockquote:font-light prose-blockquote:text-slate-600
+      prose-p:text-slate-700 prose-p:leading-relaxed
+      prose-li:text-slate-700
+      article-intro">
+      <slot />
+    </div>
+
+    {/* Sources section */}
+    {sourceLinks.length > 0 && (
+      <section class="mt-12 pt-10 border-t border-slate-200">
+        <h2 class="text-2xl font-black mb-6 uppercase tracking-widest text-slate-900">Sources analysées</h2>
+        <div class="grid gap-4">
+          {sourceLinks.map((source) => (
+            <a
+              href={source.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:border-primary transition-all focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <div class="flex items-center gap-4 min-w-0">
+                <span class="text-primary bg-primary/10 p-2 rounded-lg text-xl shrink-0" aria-hidden="true">🔗</span>
+                <div class="min-w-0">
+                  <p class="font-bold group-hover:text-primary transition-colors truncate">
+                    {source.title}
+                  </p>
+                  <p class="text-xs text-slate-500 uppercase truncate">Lien externe • {source.domain}</p>
+                </div>
+              </div>
+              <span class="text-slate-400 group-hover:translate-x-1 transition-transform shrink-0 ml-4" aria-hidden="true">↗</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {/* Pour aller plus loin */}
+    {furtherLinks.length > 0 && (
+      <section class="mt-12 pt-8 border-t border-slate-200">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold text-slate-900">Pour aller plus loin</h2>
+          <span class="text-primary text-xl" aria-hidden="true">📚</span>
+        </div>
+        <div class="divide-y divide-primary/20">
+          {furtherLinks.map((link) => (
+            <div class="py-5">
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="font-bold text-primary hover:underline"
+              >
+                {link.title}
+              </a>
+              {link.description && (
+                <p class="text-sm text-slate-500 mt-1">— {link.description}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {/* Disclaimer */}
+    <p class="mt-16 pt-8 border-t border-slate-200 text-sm italic text-slate-400">
+      Cet article a été rédigé en m'appuyant sur une IA pour m'aider à synthétiser et structurer ma veille. Les idées, le choix des sources et la relecture restent les miens.
+    </p>
+  </article>
+</BaseLayout>

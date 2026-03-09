@@ -1,0 +1,103 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import TagPill from '../components/TagPill.astro';
+
+const articles = await getCollection('articles');
+const sorted = articles.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const hero = sorted[0];
+const rest = sorted.slice(1);
+
+const base = import.meta.env.BASE_URL;
+
+const heroImageUrl = hero?.data.image
+  ? `${base}/images/${hero.data.image}`
+  : `${base}/placeholder-veilleur.svg`;
+
+const heroDate = hero?.data.date.toLocaleDateString('fr-FR', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+});
+---
+
+<BaseLayout>
+  {sorted.length === 0 ? (
+    <div class="text-center py-40 text-slate-400">
+      <p class="text-6xl mb-6" aria-hidden="true">🦉</p>
+      <p class="text-xl font-semibold">Aucun article disponible pour l'instant.</p>
+      <p class="text-sm mt-2">Les articles seront publiés après le premier cycle de génération.</p>
+    </div>
+  ) : (
+    <>
+      {/* Hero — same style as article page */}
+      <section class="w-full bg-slate-200">
+        <a
+          href={`${base}/articles/${hero.slug}`}
+          class="block aspect-[16/9] w-full max-h-[60vh] relative overflow-hidden group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
+        >
+          <img
+            src={heroImageUrl}
+            alt={hero.data.title}
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            width="1600"
+            height="900"
+            loading="eager"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-background-dark/80 to-transparent"></div>
+        </a>
+      </section>
+
+      {/* Hero card — overlapping */}
+      <div class="max-w-[800px] mx-auto px-4 -mt-24 relative z-10 bg-background-light rounded-t-3xl pt-12 pb-8">
+        <div class="flex flex-wrap gap-2 mb-6">
+          {hero.data.themes.map((t) => <TagPill tag={t} />)}
+        </div>
+        <h1 class="text-4xl md:text-6xl font-black leading-[1.1] mb-6 text-slate-900 tracking-tight">
+          <a
+            href={`${base}/articles/${hero.slug}`}
+            class="hover:text-primary transition-colors"
+          >
+            {hero.data.title}
+          </a>
+        </h1>
+        <div class="flex items-center gap-4 pb-8 border-b border-slate-200">
+          <img src={`${base}/images/avatar.jpg`} alt="Aurélien Allienne" class="size-12 rounded-full object-cover shrink-0" />
+          <div>
+            <p class="font-bold text-slate-900">Aurélien Allienne</p>
+            <p class="text-sm text-slate-500">Publié le {heroDate}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Grille articles */}
+      <div class="w-full max-w-6xl px-6 pt-16 pb-20 mx-auto">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-6 mb-10">
+          <h2 class="text-2xl md:text-3xl font-bold tracking-tight">Dernières Analyses</h2>
+          <div class="hidden md:flex gap-3">
+            <a href={base} class="px-4 py-1.5 rounded-full bg-primary text-navy-custom font-semibold text-sm">Tous</a>
+            <a href={`${base}/tags/ia`} class="px-4 py-1.5 rounded-full bg-slate-100 hover:bg-primary/20 transition-colors text-sm font-medium">IA</a>
+            <a href={`${base}/tags/leadership`} class="px-4 py-1.5 rounded-full bg-slate-100 hover:bg-primary/20 transition-colors text-sm font-medium">Leadership</a>
+            <a href={`${base}/tags/data`} class="px-4 py-1.5 rounded-full bg-slate-100 hover:bg-primary/20 transition-colors text-sm font-medium">Data</a>
+          </div>
+        </div>
+        <section aria-label="Liste des articles">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {(rest.length > 0 ? rest : sorted).map((article) => (
+              <ArticleCard
+                slug={article.slug}
+                title={article.data.title}
+                date={article.data.date}
+                themes={article.data.themes}
+                sources={article.data.sources}
+                image={article.data.image}
+              />
+            ))}
+          </div>
+        </section>
+      </div>
+    </>
+  )}
+</BaseLayout>

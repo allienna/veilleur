@@ -1,0 +1,64 @@
+---
+import TagPill from './TagPill.astro';
+
+interface Props {
+  slug: string;
+  title: string;
+  date: Date;
+  themes: string[];
+  sources?: number;
+  image?: string;
+}
+
+const { slug, title, date, themes, sources, image } = Astro.props;
+
+const base = import.meta.env.BASE_URL;
+const dateStr = date.toISOString().slice(0, 10);
+
+const formattedDate = date.toLocaleDateString('fr-FR', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+});
+
+const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veilleur.svg`;
+---
+
+<article class="flex flex-col group cursor-pointer">
+  <a
+    href={`${base}/articles/${slug}`}
+    class="w-full aspect-video rounded-xl mb-5 shadow-sm overflow-hidden border border-slate-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+    aria-label={`Lire l'article : ${title}`}
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <img
+      src={imageUrl}
+      alt=""
+      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      width="800"
+      height="450"
+      loading="lazy"
+    />
+  </a>
+
+  {themes.length > 0 && (
+    <div class="flex flex-wrap gap-2 mb-3">
+      {themes.slice(0, 3).map((theme) => <TagPill tag={theme} />)}
+    </div>
+  )}
+
+  <h2 class="text-xl font-bold mb-2 group-hover:text-primary transition-colors leading-snug">
+    <a
+      href={`${base}/articles/${slug}`}
+      class="focus:outline-none focus:ring-2 focus:ring-primary rounded"
+    >
+      {title}
+    </a>
+  </h2>
+
+  <p class="text-slate-500 text-sm font-medium">
+    <time datetime={dateStr}>{formattedDate}</time>
+    {sources !== undefined && <span> • {sources} source{sources > 1 ? 's' : ''}</span>}
+  </p>
+</article>

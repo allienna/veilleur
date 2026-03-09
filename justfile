@@ -34,6 +34,12 @@ read-content DATE +INDICES:
 detect-trends DATE="":
     uv run python3 scripts/detect_trends.py {{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }}
 
+# Add an image for a given date (copies to site/public/images/DATE.png)
+add-image DATE FILE:
+    mkdir -p site/public/images
+    cp "{{ FILE }}" "site/public/images/{{ DATE }}.png"
+    @echo "Image saved to site/public/images/{{ DATE }}.png"
+
 # ── History & search ──────────────────────────────────────────────
 
 # Index an article into ChromaDB (DATE=YYYY-MM-DD, defaults to today)
@@ -77,6 +83,16 @@ insights:
 # Show engagement insights formatted for /generate injection
 insights-for-generate:
     uv run python3 scripts/metrics_insights.py --for-generate
+
+# ── Site ──────────────────────────────────────────────────────────
+
+# Start the Astro site locally (dev server)
+site:
+    cd site && npm install && npm run dev
+
+# Export ChromaDB + SQLite data to JSON for the Astro site
+export-site-data:
+    uv run python3 scripts/export_site_data.py
 
 # ── Tests ─────────────────────────────────────────────────────────
 

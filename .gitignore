@@ -1,5 +1,12 @@
-# Data (généré par n8n, ne pas versionner)
-data/
+# Data — raw newsletters et bases de données (ne pas versionner)
+data/raw/
+data/chromadb/
+data/metrics.db
+data/site/images/
+
+# Articles et fiches générés (versionnés pour le déploiement site)
+# data/output/ → tracké
+# data/fiches/ → tracké
 
 # n8n local data
 n8n_data/
@@ -7,6 +14,15 @@ n8n_data/
 # Python
 .venv/
 __pycache__/
+
+# Astro site build output
+site/dist/
+site/.astro/
+site/node_modules/
+# site/src/data/ JSON files are tracked (placeholders for build)
+
+# Secrets
+.env
 
 # OS
 .DS_Store
