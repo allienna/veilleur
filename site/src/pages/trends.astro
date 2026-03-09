@@ -111,7 +111,7 @@ const base = import.meta.env.BASE_URL;
                       href={`${base}/articles/${row.date}`}
                       class="text-navy-custom hover:text-primary underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded"
                     >
-                      {new Date(row.date).toLocaleDateString('fr-FR', {
+                      {new Date(row.date + 'T00:00:00').toLocaleDateString('fr-FR', {
                         day: '2-digit',
                         month: 'short',
                         year: 'numeric',

@@ -34,7 +34,7 @@ const parentDate = used_in[0] ?? null;
         href={`${base}/articles/${parentDate}`}
         class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-primary transition-colors mb-8 focus:outline-none focus:ring-2 focus:ring-primary rounded"
       >
-        ← Article du {new Date(parentDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+        ← Article du {new Date(parentDate + 'T00:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
       </a>
     ) : (
       <a
@@ -119,7 +119,7 @@ const parentDate = used_in[0] ?? null;
                 href={`${base}/articles/${articleDate}`}
                 class="text-sm text-navy-custom hover:text-primary underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded"
               >
-                Article du {new Date(articleDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                Article du {new Date(articleDate + 'T00:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
               </a>
             </li>
           ))}

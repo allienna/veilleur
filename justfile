@@ -34,11 +34,11 @@ read-content DATE +INDICES:
 detect-trends DATE="":
     uv run python3 scripts/detect_trends.py {{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }}
 
-# Add an image for a given date (copies to data/site/images/DATE.png)
+# Add an image for a given date (copies to site/public/images/DATE.png)
 add-image DATE FILE:
-    mkdir -p data/site/images
-    cp "{{ FILE }}" "data/site/images/{{ DATE }}.png"
-    @echo "Image saved to data/site/images/{{ DATE }}.png"
+    mkdir -p site/public/images
+    cp "{{ FILE }}" "site/public/images/{{ DATE }}.png"
+    @echo "Image saved to site/public/images/{{ DATE }}.png"
 
 # ── History & search ──────────────────────────────────────────────
 

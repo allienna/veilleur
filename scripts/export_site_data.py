@@ -83,7 +83,7 @@ def export_metrics():
     return metrics
 
 
-def export_themes_over_time(articles_meta, metrics):
+def export_themes_over_time(articles_meta):
     """Aggregate theme occurrences by month.
 
     Returns a dict keyed by theme, where each value is a dict of month → count.
@@ -119,11 +119,11 @@ def main():
     print(f"  → {len(metrics)} metrics entries exported")
 
     print("Aggregating themes over time...")
-    themes = export_themes_over_time(articles, metrics)
+    themes = export_themes_over_time(articles)
     (OUTPUT_DIR / 'themes-over-time.json').write_text(
         json.dumps(themes, indent=2, ensure_ascii=False), encoding='utf-8'
     )
-    print(f"  → {len(themes)} months exported")
+    print(f"  → {len(themes)} themes exported")
 
     print(f"\nDone. Data written to {OUTPUT_DIR}/")
 
