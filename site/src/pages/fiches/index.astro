@@ -1,11 +1,18 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import TagPill from '../../components/TagPill.astro';
+import FicheCard from '../../components/FicheCard.astro';
 import { getCollection } from 'astro:content';
 
 const base = import.meta.env.BASE_URL;
 
 const allFiches = await getCollection('fiches');
+const allArticles = await getCollection('articles');
+
+const articleTitles: Record<string, string> = {};
+for (const article of allArticles) {
+  const dateStr = article.data.date.toISOString().slice(0, 10);
+  articleTitles[dateStr] = article.data.title;
+}
 
 function extractSummary(body: string | undefined): string {
   if (!body) return '';
@@ -13,20 +20,9 @@ function extractSummary(body: string | undefined): string {
   return match ? match[1].trim() : '';
 }
 
-function getDomain(url: string): string {
-  try { return new URL(url).hostname.replace('www.', ''); } catch { return ''; }
-}
-
 const sortedFiches = allFiches.sort((a, b) =>
   b.data.date.getTime() - a.data.date.getTime()
 );
-
-const themeGradients: Record<string, string> = {
-  'IA': 'from-amber-50 to-orange-50',
-  'Sécurité': 'from-red-50 to-rose-50',
-  'Leadership': 'from-blue-50 to-indigo-50',
-  'Tech': 'from-emerald-50 to-teal-50',
-};
 ---
 
 <BaseLayout title="Analyses des sources">
@@ -40,17 +36,28 @@ const themeGradients: Record<string, string> = {
       ← Retour aux articles
     </a>
 
-    <h1 class="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
-      Analyses des sources
+    <h1 id="page-title" class="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
+      Analyses des sources<span id="article-title-suffix" class="text-primary italic"></span>
     </h1>
     <p class="text-lg text-slate-500 mb-12">
-      Fiches de synthèse des articles analysés dans la veille.
+      Retrouvez ici l'ensemble des sources décortiquées, synthétisées et vérifiées par notre comité d'experts en intelligence artificielle.
     </p>
 
-    <p class="text-slate-500 text-center py-20">Bientôt disponible.</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {sortedFiches.map((fiche) => (
+        <FicheCard
+          slug={fiche.slug}
+          title={fiche.data.title}
+          url={fiche.data.url}
+          theme={fiche.data.theme}
+          summary={extractSummary(fiche.body)}
+          usedIn={fiche.data.used_in}
+        />
+      ))}
+    </div>
   </div>
 
-  <script define:vars={{ base }}>
+  <script define:vars={{ base, articleTitles }}>
     const params = new URLSearchParams(window.location.search);
     const articleDate = params.get('article');
     if (articleDate) {
@@ -61,6 +68,13 @@ const themeGradients: Record<string, string> = {
         });
         backLink.href = `${base}/articles/${articleDate}`;
         backLink.textContent = `\u2190 Consulter l'article du ${formatted}`;
+      }
+
+      const titleSuffix = document.getElementById('article-title-suffix');
+      const title = articleTitles[articleDate];
+      if (titleSuffix && title) {
+        document.getElementById('page-title').childNodes[0].textContent = 'Analyses de l\u2019article\u00a0: ';
+        titleSuffix.textContent = title;
       }
 
       document.querySelectorAll('.fiche-card').forEach((card) => {
