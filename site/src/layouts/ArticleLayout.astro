@@ -7,12 +7,12 @@ interface Props {
   title: string;
   date: Date;
   themes: string[];
-  sources?: number;
+  minutesRead?: string;
   image?: string;
   body?: string;
 }
 
-const { title, date, themes, sources, image, body } = Astro.props;
+const { title, date, themes, minutesRead, image, body } = Astro.props;
 
 // Parse sources and "pour aller plus loin" from markdown body
 function parseLinks(text: string): { title: string; url: string; domain: string }[] {
@@ -100,7 +100,7 @@ const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veille
         <p class="font-bold text-slate-900">Aurélien Allienne</p>
         <p class="text-sm text-slate-500">
           Publié le <time datetime={dateStr}>{formattedDate}</time>
-          {sources !== undefined && <span> • {sources} source{sources > 1 ? 's' : ''}</span>}
+          {minutesRead && <span> • {minutesRead.replace('min read', 'min de lecture')}</span>}
         </p>
       </div>
     </div>
