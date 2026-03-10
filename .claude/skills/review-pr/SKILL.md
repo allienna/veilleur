@@ -19,12 +19,7 @@ If that fails, list open PRs and ask.
 ## 2. Fetch review comments
 
 ```bash
-gh api repos/allienna/veilleur/pulls/{PR_NUMBER}/comments --jq '.[] | select(.in_reply_to_id == null) | "ID: \(.id) | File: \(.path):\(.line // .original_line) | Body: \(.body)"'
-```
-
-Also check general PR comments:
-```bash
-gh pr view {PR_NUMBER} --comments
+gh api repos/allienna/veilleur/pulls/{PR_NUMBER}/comments --paginate --jq '.[] | select(.in_reply_to_id == null) | "ID: \(.id) | File: \(.path):\(.line // .original_line) | Body: \(.body)"'
 ```
 
 If no comments: display "No review comments found." and stop.
