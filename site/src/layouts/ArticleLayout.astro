@@ -128,11 +128,11 @@ const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veille
               href={source.url}
               target="_blank"
               rel="noopener noreferrer"
-              class="group flex items-start gap-3 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              class="group flex items-start gap-3 p-3 sm:p-4 bg-white border border-slate-200 rounded-xl hover:border-primary transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 overflow-hidden"
             >
-              <span class="text-primary bg-primary/10 p-2 rounded-lg text-xl shrink-0" aria-hidden="true">🔗</span>
+              <span class="text-primary bg-primary/10 p-2 rounded-lg text-xl shrink-0 hidden sm:block" aria-hidden="true">🔗</span>
               <div class="min-w-0 flex-1">
-                <p class="font-bold group-hover:text-primary transition-colors line-clamp-2">
+                <p class="font-bold group-hover:text-primary transition-colors line-clamp-2 break-words">
                   {source.title}
                 </p>
                 <p class="text-xs text-slate-500 uppercase truncate mt-0.5">Lien externe • {source.domain}</p>
