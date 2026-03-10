@@ -1,0 +1,104 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TagPill from '../../components/TagPill.astro';
+import { getCollection } from 'astro:content';
+
+const base = import.meta.env.BASE_URL;
+
+const allFiches = await getCollection('fiches');
+
+// Group fiches by article date (used_in)
+const fichesByArticle = new Map<string, typeof allFiches>();
+for (const fiche of allFiches) {
+  for (const articleDate of fiche.data.used_in) {
+    if (!fichesByArticle.has(articleDate)) {
+      fichesByArticle.set(articleDate, []);
+    }
+    fichesByArticle.get(articleDate)!.push(fiche);
+  }
+}
+
+// Sort dates descending
+const sortedDates = [...fichesByArticle.keys()].sort((a, b) => b.localeCompare(a));
+---
+
+<BaseLayout title="Analyses des sources">
+  <div class="w-full max-w-4xl px-6 py-12 mx-auto">
+    <a
+      href={base}
+      class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-primary transition-colors mb-8 focus:outline-none focus:ring-2 focus:ring-primary rounded"
+    >
+      ← Retour aux articles
+    </a>
+
+    <h1 class="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
+      Analyses des sources
+    </h1>
+    <p class="text-lg text-slate-500 mb-12">
+      Fiches de synthèse des articles analysés dans la veille.
+    </p>
+
+    {sortedDates.map((articleDate) => {
+      const fiches = fichesByArticle.get(articleDate)!;
+      const formattedDate = new Date(articleDate + 'T00:00:00').toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      });
+      return (
+        <section id={`article-${articleDate}`} class="mb-14">
+          <div class="flex items-center gap-4 mb-6">
+            <h2 class="text-xl font-bold text-slate-900 whitespace-nowrap">
+              <time datetime={articleDate}>{formattedDate}</time>
+            </h2>
+            <div class="h-px flex-1 bg-slate-200" />
+            <a
+              href={`${base}/articles/${articleDate}`}
+              class="text-sm text-slate-500 hover:text-primary transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-primary rounded"
+            >
+              Voir l'article →
+            </a>
+          </div>
+
+          <div class="grid gap-4">
+            {fiches.map((fiche) => (
+              <a
+                href={`${base}/fiches/${fiche.slug}`}
+                class="group flex items-start gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              >
+                <div class="min-w-0 flex-1">
+                  <p class="font-bold text-slate-900 group-hover:text-primary transition-colors line-clamp-2 break-words">
+                    {fiche.data.title}
+                  </p>
+                  <div class="flex flex-wrap items-center gap-2 mt-2">
+                    <TagPill tag={fiche.data.theme} href={`${base}/fiches/${fiche.slug}`} />
+                    {fiche.data.tone && (
+                      <span class="text-xs text-slate-400 capitalize">{fiche.data.tone}</span>
+                    )}
+                  </div>
+                </div>
+                <span class="text-slate-400 group-hover:translate-x-1 transition-transform shrink-0 mt-1" aria-hidden="true">→</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      );
+    })}
+
+    {sortedDates.length === 0 && (
+      <p class="text-slate-500 text-center py-20">Aucune fiche disponible pour le moment.</p>
+    )}
+  </div>
+
+  <script>
+    // Scroll to the relevant article section if ?article= param is present
+    const params = new URLSearchParams(window.location.search);
+    const articleDate = params.get('article');
+    if (articleDate) {
+      const section = document.getElementById(`article-${articleDate}`);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  </script>
+</BaseLayout>

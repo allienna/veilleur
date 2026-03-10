@@ -168,6 +168,18 @@ const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veille
       </section>
     )}
 
+    {/* CTA fiches */}
+    {linkedFiches.length > 0 && (
+      <div class="mt-2 pt-2 text-center">
+        <a
+          href={`${base}/fiches?article=${dateStr}`}
+          class="inline-block px-8 py-4 bg-primary text-slate-900 font-black text-sm uppercase tracking-widest rounded-xl hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+        >
+          Consulter toutes les analyses de cet article
+        </a>
+      </div>
+    )}
+
     {/* Disclaimer */}
     <p class="mt-16 pt-8 border-t border-slate-200 text-sm italic text-slate-400">
       Cet article a été rédigé en m'appuyant sur une IA pour m'aider à synthétiser et structurer ma veille. Les idées, le choix des sources et la relecture restent les miens.
