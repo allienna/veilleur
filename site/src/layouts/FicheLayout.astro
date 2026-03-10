@@ -192,26 +192,5 @@ const googleTranslateUrl = `https://translate.google.com/translate?sl=auto&tl=fr
         </aside>
       )}
     </div>
-
-    {/* Utilisée dans */}
-    {used_in.length > 0 && (
-      <aside class="border-t border-slate-200 pt-8">
-        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">
-          Utilisée dans
-        </h2>
-        <ul class="flex flex-wrap gap-3">
-          {used_in.map((articleDate) => (
-            <li>
-              <a
-                href={`${base}/articles/${articleDate}`}
-                class="text-sm text-navy-custom hover:text-primary underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded"
-              >
-                Article du {new Date(articleDate + 'T00:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </aside>
-    )}
   </div>
 </BaseLayout>
