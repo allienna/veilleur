@@ -19,6 +19,7 @@ data/
 │   └── 2026-03-06-image-prompt.md
 ├── chromadb/                         # Article vector index (ChromaDB)
 ├── metrics.db                        # LinkedIn metrics (SQLite)
+site/                                 # Astro static site (see "Astro site" section)
 ```
 
 ## Raw file format (produced by n8n)
@@ -80,11 +81,75 @@ Use `just` recipes for all operations. Run `just` to see available recipes.
 - `just insights` — Engagement insights report (themes, trends)
 - `just insights-for-generate` — Insights formatted for /generate injection
 
+### Site
+- `just site` — Install deps and start Astro dev server
+- `just export-site-data` — Export ChromaDB/SQLite data to JSON for the site
+- `just add-image DATE FILE` — Copy an image to `site/public/images/`
+
 ### Tests
 - `just test` — Run all tests
 - `just test-file FILE` — Run tests for a specific file
 
 Rule: always use `just` recipes rather than calling scripts directly.
+
+## Astro site
+
+A static site built with Astro, deployed on GitHub Pages at `https://allienna.github.io/veilleur`.
+
+### Structure
+
+```
+site/
+├── src/
+│   ├── content/
+│   │   ├── articles/          # Article markdown files (YYYY-MM-DD.md)
+│   │   └── fiches/            # Source fiches
+│   ├── layouts/
+│   │   ├── BaseLayout.astro   # Header, footer, fonts (Poppins + Work Sans)
+│   │   ├── ArticleLayout.astro # Article page with hero, sources, further reading
+│   │   ├── PageLayout.astro   # Static pages with optional hero image
+│   │   └── FicheLayout.astro  # Source fiche detail
+│   ├── components/
+│   │   ├── ArticleCard.astro  # Card for article grids
+│   │   └── TagPill.astro      # Theme tag badge
+│   ├── pages/                 # Astro routes
+│   ├── data/                  # JSON data (metrics, themes — placeholder files tracked)
+│   └── styles/global.css      # Global styles, heading fonts, article intro
+├── public/images/             # Article images, mascot, page heroes
+├── tailwind.config.mjs        # Tailwind + typography plugin
+└── astro.config.mjs           # base: '/veilleur', output: 'static'
+```
+
+### Article frontmatter
+
+```yaml
+title: "Article title"
+date: 2026-03-09
+themes: [IA, Sécurité, Leadership]
+sources: 6
+image: 2026-03-09.png
+```
+
+Sources and "Pour aller plus loin" sections are parsed from the markdown body by `ArticleLayout.astro`.
+
+### Local development
+
+```bash
+just site              # npm install + npm run dev
+just export-site-data  # Export ChromaDB/SQLite → JSON (needed for trends page)
+just add-image DATE FILE  # Copy image to site/public/images/
+```
+
+### Deployment
+
+GitHub Actions workflow (`.github/workflows/deploy.yml`) triggers on push to `main` when `site/**` changes. It exports data, builds the Astro site, and deploys to GitHub Pages.
+
+### Design conventions
+
+- **Fonts**: Poppins (headings via `font-display`), Work Sans (body via `font-sans`)
+- **Colors**: primary `#f59f0a` (amber), navy-custom `#162d60`, background-light `#f8f7f5`
+- **Header/Footer**: `bg-slate-900`
+- **Mascot**: Le Veilleur owl — bible in `.claude/skills/generate/writing-guide.md`
 
 ## Notion output
 
