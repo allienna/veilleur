@@ -41,6 +41,7 @@ const summary = extractSection(body, 'Résumé');
 const whyItMatters = extractSection(body, 'Pourquoi ça compte');
 const keyPointsRaw = extractSection(body, 'Points clés');
 const keyPoints = extractListItems(keyPointsRaw);
+const translation = extractSection(body, 'Traduction française');
 ---
 
 <BaseLayout title={title}>
@@ -114,6 +115,19 @@ const keyPoints = extractListItems(keyPointsRaw);
       </dl>
     </header>
 
+    {/* Résumé */}
+    {summary && (
+      <section class="mb-10">
+        <h2 class="text-2xl font-black text-slate-900 tracking-tight mb-1">Résumé</h2>
+        <div class="w-16 h-1 bg-primary rounded-full mb-6"></div>
+        <div class="text-slate-700 leading-relaxed space-y-4">
+          {summary.split('\n\n').map((paragraph) => (
+            <p>{paragraph}</p>
+          ))}
+        </div>
+      </section>
+    )}
+
     {/* Pourquoi ça compte — callout */}
     {whyItMatters && (
       <section class="bg-amber-50/70 border-l-4 border-primary rounded-r-lg px-6 py-5 mb-10">
@@ -124,16 +138,16 @@ const keyPoints = extractListItems(keyPointsRaw);
       </section>
     )}
 
-    {/* Two-column: Résumé + Points clés */}
+    {/* Two-column: Traduction + Points clés */}
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-10">
 
-      {/* Left — Résumé */}
-      {summary && (
+      {/* Left — Traduction française */}
+      {translation && (
         <div class="lg:col-span-3">
           <h2 class="text-2xl font-black text-slate-900 tracking-tight mb-1">Traduction Française</h2>
           <div class="w-16 h-1 bg-primary rounded-full mb-6"></div>
           <div class="text-slate-700 leading-relaxed space-y-4">
-            {summary.split('\n\n').map((paragraph) => (
+            {translation.split('\n\n').map((paragraph) => (
               <p>{paragraph}</p>
             ))}
           </div>
@@ -142,7 +156,7 @@ const keyPoints = extractListItems(keyPointsRaw);
 
       {/* Right — Points clés */}
       {keyPoints.length > 0 && (
-        <aside class="lg:col-span-2">
+        <aside class={translation ? 'lg:col-span-2' : 'lg:col-span-5'}>
           <div class="border border-slate-200 rounded-lg p-5">
             <h2 class="flex items-center gap-2 text-lg font-black text-slate-900 mb-4">
               ❕ Points Clés
