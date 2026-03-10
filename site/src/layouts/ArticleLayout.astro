@@ -128,18 +128,16 @@ const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veille
               href={source.url}
               target="_blank"
               rel="noopener noreferrer"
-              class="group flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:border-primary transition-all focus:outline-none focus:ring-2 focus:ring-primary"
+              class="group flex items-start gap-3 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
-              <div class="flex items-center gap-4 min-w-0">
-                <span class="text-primary bg-primary/10 p-2 rounded-lg text-xl shrink-0" aria-hidden="true">🔗</span>
-                <div class="min-w-0">
-                  <p class="font-bold group-hover:text-primary transition-colors truncate">
-                    {source.title}
-                  </p>
-                  <p class="text-xs text-slate-500 uppercase truncate">Lien externe • {source.domain}</p>
-                </div>
+              <span class="text-primary bg-primary/10 p-2 rounded-lg text-xl shrink-0" aria-hidden="true">🔗</span>
+              <div class="min-w-0 flex-1">
+                <p class="font-bold group-hover:text-primary transition-colors line-clamp-2">
+                  {source.title}
+                </p>
+                <p class="text-xs text-slate-500 uppercase truncate mt-0.5">Lien externe • {source.domain}</p>
               </div>
-              <span class="text-slate-400 group-hover:translate-x-1 transition-transform shrink-0 ml-4" aria-hidden="true">↗</span>
+              <span class="text-slate-400 group-hover:translate-x-1 transition-transform shrink-0 mt-1" aria-hidden="true">↗</span>
             </a>
           ))}
         </div>
