@@ -62,7 +62,7 @@ const formattedDate = date.toLocaleDateString('fr-FR', {
 const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veilleur.svg`;
 ---
 
-<BaseLayout title={title} image={image} type="article" publishedDate={dateStr}>
+<BaseLayout title={title} image={image} type="article" publishedDate={date.toISOString()}>
   {/* Hero image — full width with gradient overlay */}
   <section class="w-full bg-slate-200">
     <div class="aspect-[16/9] w-full max-h-[70vh] relative overflow-hidden">

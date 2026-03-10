@@ -20,7 +20,7 @@ const {
 const base = import.meta.env.BASE_URL;
 const siteUrl = import.meta.env.SITE || 'https://allienna.github.io';
 const pageTitle = title === 'Le Veilleur' ? title : `${title} — Le Veilleur`;
-const ogImage = image ? `${siteUrl}${base}/images/${image}` : `${siteUrl}${base}/placeholder-veilleur.svg`;
+const ogImage = new URL(image ? `${base}/images/${image}` : `${base}/placeholder-veilleur.svg`, siteUrl).href;
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
 ---
 
