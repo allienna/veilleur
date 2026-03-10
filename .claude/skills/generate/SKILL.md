@@ -1,6 +1,6 @@
 ---
 name: generate
-description: Generate the daily tech watch article (filter, write, push to Notion)
+description: Generate the daily tech watch article (filter, write, push to Notion, publish to site)
 context: fork
 argument-hint: "[date]"
 ---
@@ -128,9 +128,9 @@ tone: {opinion | tutorial | research | news}
 used_in: ["{DATE}"]
 ---
 
-## Traduction complète
+## Résumé
 
-{Full translation of the source article into French. Use the full content already read in step 2. Be thorough — this is a reference document.}
+{3-4 sentence summary of the source in French. Concise, captures the key thesis and main facts.}
 
 ## Points clés
 
@@ -138,6 +138,10 @@ used_in: ["{DATE}"]
 - {key point 2}
 - {key point 3}
 ...
+
+## Analyse approfondie
+
+{Full translation of the source article into French. Use the full content already read in step 2. Be thorough — this is a reference document. Preserve the original structure (sections, lists, quotes).}
 
 ## Pourquoi ça compte
 
@@ -179,3 +183,30 @@ Via the Notion MCP, create a page in the "Veille LinkedIn" database with:
 - A callout "🎨 Prompt Image" with image-prompt.md content
 
 Confirm the URL of the created Notion page.
+
+## 7. Review on Notion
+
+Display:
+> 📝 L'article est sur Notion : {NOTION_URL}
+> Relis-le, apporte tes modifications si besoin, puis dis-moi quand c'est bon.
+
+Wait for user confirmation before continuing.
+
+## 8. Fetch reviewed article from Notion
+
+Fetch the Notion page content using the Notion MCP `fetch` tool with the page ID from step 6.
+
+Parse the fetched content to extract:
+- The article body (everything before the "Post LinkedIn" callout)
+- Update `data/output/{DATE}-article.md` with the reviewed content from Notion, preserving the YAML front matter
+
+This ensures the site version matches exactly what was validated on Notion.
+
+## 9. Publish to site
+
+Copy the reviewed files to the Astro site structure:
+
+1. **Article**: Copy `data/output/{DATE}-article.md` to `site/src/content/articles/{DATE}.md`
+2. **Fiches**: Copy all `data/fiches/{DATE}-*.md` files to `site/src/content/fiches/`
+
+Display a summary of files copied, then ask: "Tu veux lancer /ship pour créer la PR ?"

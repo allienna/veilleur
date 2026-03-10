@@ -80,13 +80,14 @@ Les fiches de lecture sont générées automatiquement lors de chaque `/generate
 Chaque fiche contient :
 
 1. **Front matter YAML** : titre original, date, URL source, auteurs (extraits du domaine ou du contenu), mots-clés (3-5), thème principal, tonalité, liste des articles qui l'utilisent
-2. **Traduction complète** : traduction intégrale en français du contenu source — fidèle, complète, lisible
-3. **Points clés** : 3 à 6 points extraits de la traduction
-4. **Pourquoi ça compte** : 1-2 phrases sur la pertinence pour la veille tech
+2. **Résumé** : 3-4 phrases synthétiques capturant la thèse et les faits principaux
+3. **Points clés** : 3 à 6 points extraits de l'analyse
+4. **Analyse approfondie** : traduction intégrale en français du contenu source — fidèle, complète, lisible, structure préservée
+5. **Pourquoi ça compte** : 1-2 phrases sur la pertinence pour la veille tech
 
 ### Règles de traduction
 
-- Traduire intégralement, sans résumer — la fiche est un document de référence
+- L'analyse approfondie traduit intégralement, sans résumer — la fiche est un document de référence
 - Préserver la structure du texte original (sections, listes, citations)
 - Adapter les expressions idiomatiques naturellement
 - Conserver les termes techniques en anglais quand ils n'ont pas d'équivalent courant en français
