@@ -1,130 +1,192 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-import TagPill from '../components/TagPill.astro';
+import { marked } from 'marked';
 
 interface Props {
   title: string;
-  date: Date;
   url: string;
   authors?: string[];
   keywords: string[];
   theme: string;
   tone?: string;
   used_in: string[];
+  body?: string;
 }
 
-const { title, date, url, authors, keywords, theme, tone, used_in } = Astro.props;
+const { title, url, authors, keywords, theme, tone, used_in, body } = Astro.props;
 
 const base = import.meta.env.BASE_URL;
 
-const formattedDate = date.toLocaleDateString('fr-FR', {
-  day: '2-digit',
-  month: 'long',
-  year: 'numeric',
-});
-
 const parentDate = used_in[0] ?? null;
+
+function getDomain(url: string): string {
+  try { return new URL(url).hostname.replace('www.', ''); } catch { return ''; }
+}
+
+const domain = getDomain(url);
+
+// Parse body sections
+function extractSection(text: string | undefined, heading: string): string {
+  if (!text) return '';
+  const regex = new RegExp(`## ${heading}\\n\\n([\\s\\S]*?)(?=\\n## |$)`);
+  const match = text.match(regex);
+  return match ? match[1].trim() : '';
+}
+
+function extractListItems(text: string): string[] {
+  return text.split('\n').filter((l) => l.startsWith('- ')).map((l) => l.slice(2).trim());
+}
+
+const summaryRaw = extractSection(body, 'Résumé');
+const whyItMattersRaw = extractSection(body, 'Pourquoi ça compte');
+const keyPointsRaw = extractSection(body, 'Points clés');
+const keyPoints = extractListItems(keyPointsRaw);
+const translationRaw = extractSection(body, 'Analyse approfondie');
+const googleTranslateUrl = `https://translate.google.com/translate?sl=auto&tl=fr&u=${encodeURIComponent(url)}`;
+
+const summaryHtml = summaryRaw ? await marked.parse(summaryRaw) : '';
+const whyItMattersHtml = whyItMattersRaw ? await marked.parse(whyItMattersRaw) : '';
+const translationHtml = translationRaw ? await marked.parse(translationRaw) : '';
 ---
 
 <BaseLayout title={title}>
   <div class="w-full max-w-4xl px-6 py-12 mx-auto">
 
+    {/* Breadcrumb */}
     {parentDate ? (
-      <a
-        href={`${base}/articles/${parentDate}`}
-        class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-primary transition-colors mb-8 focus:outline-none focus:ring-2 focus:ring-primary rounded"
-      >
-        ← Article du {new Date(parentDate + 'T00:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
-      </a>
+      <nav class="flex items-center gap-2 text-sm mb-8">
+        <a href={base} class="text-slate-500 hover:text-primary transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+          </svg>
+        </a>
+        <span class="text-slate-300">›</span>
+        <a
+          href={`${base}/articles/${parentDate}`}
+          class="text-slate-500 hover:text-primary transition-colors"
+        >
+          Article du {new Date(parentDate + 'T00:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+        </a>
+        <span class="text-slate-300">›</span>
+        <a
+          href={`${base}/fiches?article=${parentDate}`}
+          class="text-slate-500 hover:text-primary transition-colors"
+        >
+          Analyses
+        </a>
+        <span class="text-slate-300">›</span>
+        <span class="text-slate-900 font-medium truncate max-w-xs">{title}</span>
+      </nav>
     ) : (
       <a
-        href={base}
-        class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-primary transition-colors mb-8 focus:outline-none focus:ring-2 focus:ring-primary rounded"
+        href={`${base}/fiches`}
+        class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-primary transition-colors mb-8"
       >
-        ← Retour aux articles
+        ← Toutes les analyses
       </a>
     )}
 
-    <header class="mb-10 pb-8 border-b border-slate-200">
-      <div class="mb-3">
-        <TagPill tag={theme} />
-      </div>
-      <h1 class="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 leading-[1.1] tracking-tight mb-4">
+    {/* Header */}
+    <header class="mb-10">
+      <h1 class="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 leading-[1.1] tracking-tight mb-4">
         {title}
       </h1>
 
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-flex items-center gap-1.5 text-sm text-navy-custom hover:text-primary underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded mb-6"
-      >
-        🌐 Voir la source originale
-      </a>
+      <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block bg-primary text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+        >
+          Article original&nbsp;: {domain}
+        </a>
+        <a
+          href={googleTranslateUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded"
+        >
+           Lire en 🇫🇷 via Google Translate
+        </a>
+      </div>
 
-      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mt-4">
-        <div>
-          <dt class="text-slate-400 font-medium">Date</dt>
-          <dd class="text-slate-900">
-            <time datetime={date.toISOString().slice(0, 10)}>{formattedDate}</time>
-          </dd>
-        </div>
-
+      {/* Metadata grid */}
+      <dl class="grid grid-cols-2 md:grid-cols-4 border border-slate-200 rounded-lg mt-6 divide-x divide-y md:divide-y-0 divide-slate-200">
         {authors && authors.length > 0 && (
-          <div>
-            <dt class="text-slate-400 font-medium">Auteur{authors.length > 1 ? 's' : ''}</dt>
-            <dd class="text-slate-900">{authors.join(', ')}</dd>
+          <div class="px-4 py-3">
+            <dt class="text-xs font-bold text-primary uppercase tracking-wider mb-1">Auteur{authors.length > 1 ? 's' : ''}</dt>
+            <dd class="text-sm text-slate-900">{authors.join(', ')}</dd>
           </div>
         )}
-
-        {tone && (
-          <div>
-            <dt class="text-slate-400 font-medium">Ton</dt>
-            <dd class="text-slate-900 capitalize">{tone}</dd>
-          </div>
-        )}
-
+        <div class="px-4 py-3">
+          <dt class="text-xs font-bold text-primary uppercase tracking-wider mb-1">Thème</dt>
+          <dd class="text-sm text-slate-900">{theme}</dd>
+        </div>
         {keywords.length > 0 && (
-          <div class="sm:col-span-2">
-            <dt class="text-slate-400 font-medium mb-2">Mots-clés</dt>
-            <dd class="flex flex-wrap gap-1.5">
-              {keywords.map((kw) => (
-                <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded font-medium">
-                  {kw}
-                </span>
-              ))}
-            </dd>
+          <div class="px-4 py-3">
+            <dt class="text-xs font-bold text-primary uppercase tracking-wider mb-1">Mots-clés</dt>
+            <dd class="text-sm text-slate-900">{keywords.join(', ')}</dd>
+          </div>
+        )}
+        {tone && (
+          <div class="px-4 py-3">
+            <dt class="text-xs font-bold text-primary uppercase tracking-wider mb-1">Ton</dt>
+            <dd class="text-sm text-slate-900 capitalize">{tone}</dd>
           </div>
         )}
       </dl>
     </header>
 
-    <div class="prose prose-lg max-w-none
-      prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-900
-      prose-a:text-navy-custom prose-a:underline hover:prose-a:text-primary
-      prose-strong:text-slate-900
-      prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-slate-600">
-      <slot />
-    </div>
-
-    {used_in.length > 0 && (
-      <aside class="mt-14 border-t border-slate-200 pt-8">
-        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">
-          Utilisée dans
-        </h2>
-        <ul class="flex flex-wrap gap-3">
-          {used_in.map((articleDate) => (
-            <li>
-              <a
-                href={`${base}/articles/${articleDate}`}
-                class="text-sm text-navy-custom hover:text-primary underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded"
-              >
-                Article du {new Date(articleDate + 'T00:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </aside>
+    {/* Résumé */}
+    {summaryHtml && (
+      <section class="mb-10">
+        <h2 class="text-2xl font-black text-slate-900 tracking-tight mb-1">Résumé</h2>
+        <div class="w-16 h-1 bg-primary rounded-full mb-6"></div>
+        <div class="text-slate-700 leading-relaxed space-y-4 prose prose-slate" set:html={summaryHtml} />
+      </section>
     )}
+
+    {/* Pourquoi ça compte — callout */}
+    {whyItMattersHtml && (
+      <section class="bg-amber-50/70 border-l-4 border-primary rounded-r-lg px-6 py-5 mb-10">
+        <h2 class="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-slate-900 mb-2">
+          💡 Pourquoi ça compte
+        </h2>
+        <div class="text-slate-700 italic leading-relaxed prose prose-slate" set:html={whyItMattersHtml} />
+      </section>
+    )}
+
+    {/* Two-column: Traduction + Points clés */}
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-10">
+
+      {/* Left — Traduction française */}
+      {translationHtml && (
+        <div class="lg:col-span-3">
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight mb-1">Analyse approfondie</h2>
+          <div class="w-16 h-1 bg-primary rounded-full mb-6"></div>
+          <div class="text-slate-700 leading-relaxed space-y-4 prose prose-slate" set:html={translationHtml} />
+        </div>
+      )}
+
+      {/* Right — Points clés */}
+      {keyPoints.length > 0 && (
+        <aside class={translationHtml ? 'lg:col-span-2' : 'lg:col-span-5'}>
+          <div class="border border-slate-200 rounded-lg p-5">
+            <h2 class="flex items-center gap-2 text-lg font-black text-slate-900 mb-4">
+              ❕ Points Clés
+            </h2>
+            <ul class="space-y-3">
+              {keyPoints.map((point) => (
+                <li class="flex gap-3 text-sm text-slate-700 leading-relaxed">
+                  <span class="mt-1.5 size-2 rounded-full bg-primary shrink-0"></span>
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </aside>
+      )}
+    </div>
   </div>
 </BaseLayout>

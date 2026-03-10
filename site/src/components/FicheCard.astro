@@ -1,0 +1,72 @@
+---
+import TagPill from './TagPill.astro';
+
+interface Props {
+  slug: string;
+  title: string;
+  url: string;
+  theme: string;
+  summary: string;
+  usedIn: string[];
+}
+
+const { slug, title, url, theme, summary, usedIn } = Astro.props;
+
+const base = import.meta.env.BASE_URL;
+
+function getDomain(url: string): string {
+  try { return new URL(url).hostname.replace('www.', ''); } catch { return ''; }
+}
+
+const domain = getDomain(url);
+
+const themeGradients: Record<string, string> = {
+  'IA': 'from-amber-100 to-orange-200',
+  'Sécurité': 'from-red-100 to-rose-200',
+  'Leadership': 'from-blue-100 to-indigo-200',
+  'Tech': 'from-emerald-100 to-teal-200',
+};
+
+const gradient = themeGradients[theme] || 'from-slate-100 to-slate-200';
+const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+---
+
+<article class="fiche-card group flex flex-col bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300" data-used-in={usedIn.join(',')}>
+  <div class={`w-full aspect-[2/1] bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+    <img
+      src={faviconUrl}
+      alt=""
+      class="w-10 h-10 rounded-lg shadow-sm opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300"
+      width="40"
+      height="40"
+      loading="lazy"
+    />
+  </div>
+
+  <div class="flex flex-col flex-1 p-5">
+    <div class="flex items-center gap-2 mb-3">
+      <TagPill tag={theme} />
+      {domain && <span class="text-xs text-slate-400">{domain}</span>}
+    </div>
+
+    <h2 class="text-lg font-bold text-slate-900 leading-snug mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+      <a
+        href={`${base}/fiches/${slug}`}
+        class="focus:outline-none focus:ring-2 focus:ring-primary rounded"
+      >
+        {title}
+      </a>
+    </h2>
+
+    <p class="text-sm text-slate-500 leading-relaxed line-clamp-3 mb-4 flex-1">
+      {summary}
+    </p>
+
+    <a
+      href={`${base}/fiches/${slug}`}
+      class="inline-flex items-center gap-1 text-sm font-semibold text-primary border border-primary/30 rounded-full px-4 py-2 hover:bg-primary hover:text-white transition-colors self-start focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+    >
+      Lire l'analyse complète →
+    </a>
+  </div>
+</article>
