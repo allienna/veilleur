@@ -48,20 +48,37 @@ const googleTranslateUrl = `https://translate.google.com/translate?sl=auto&tl=fr
 <BaseLayout title={title}>
   <div class="w-full max-w-4xl px-6 py-12 mx-auto">
 
-    {/* Back link */}
+    {/* Breadcrumb */}
     {parentDate ? (
-      <a
-        href={`${base}/articles/${parentDate}`}
-        class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-primary transition-colors mb-8 focus:outline-none focus:ring-2 focus:ring-primary rounded"
-      >
-        ← Article du {new Date(parentDate + 'T00:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
-      </a>
+      <nav class="flex items-center gap-2 text-sm mb-8">
+        <a href={base} class="text-slate-500 hover:text-primary transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+          </svg>
+        </a>
+        <span class="text-slate-300">›</span>
+        <a
+          href={`${base}/articles/${parentDate}`}
+          class="text-slate-500 hover:text-primary transition-colors"
+        >
+          Article du {new Date(parentDate + 'T00:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+        </a>
+        <span class="text-slate-300">›</span>
+        <a
+          href={`${base}/fiches?article=${parentDate}`}
+          class="text-slate-500 hover:text-primary transition-colors"
+        >
+          Analyses
+        </a>
+        <span class="text-slate-300">›</span>
+        <span class="text-slate-900 font-medium truncate max-w-xs">{title}</span>
+      </nav>
     ) : (
       <a
-        href={base}
-        class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-primary transition-colors mb-8 focus:outline-none focus:ring-2 focus:ring-primary rounded"
+        href={`${base}/fiches`}
+        class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-primary transition-colors mb-8"
       >
-        ← Retour aux articles
+        ← Toutes les analyses
       </a>
     )}
 
