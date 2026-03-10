@@ -11,12 +11,10 @@ export async function getStaticPaths() {
 }
 
 const { fiche } = Astro.props;
-const { Content } = await fiche.render();
 ---
 
 <FicheLayout
   title={fiche.data.title}
-  date={fiche.data.date}
   url={fiche.data.url}
   authors={fiche.data.authors}
   keywords={fiche.data.keywords}

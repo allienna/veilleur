@@ -32,24 +32,16 @@ const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 ---
 
 <article class="fiche-card group flex flex-col bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300" data-used-in={usedIn.join(',')}>
-  <a
-    href={`${base}/fiches/${slug}`}
-    class={`block w-full aspect-[2/1] bg-gradient-to-br ${gradient} flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2`}
-    aria-label={`Lire l'analyse : ${title}`}
-    tabindex="-1"
-    aria-hidden="true"
-  >
-    <div class="w-full h-full flex items-center justify-center">
-      <img
-        src={faviconUrl}
-        alt=""
-        class="w-10 h-10 rounded-lg shadow-sm opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300"
-        width="40"
-        height="40"
-        loading="lazy"
-      />
-    </div>
-  </a>
+  <div class={`w-full aspect-[2/1] bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+    <img
+      src={faviconUrl}
+      alt=""
+      class="w-10 h-10 rounded-lg shadow-sm opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300"
+      width="40"
+      height="40"
+      loading="lazy"
+    />
+  </div>
 
   <div class="flex flex-col flex-1 p-5">
     <div class="flex items-center gap-2 mb-3">

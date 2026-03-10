@@ -40,8 +40,8 @@ const sortedFiches = allFiches.sort((a, b) =>
       <span class="text-slate-900 font-medium">Analyses</span>
     </nav>
 
-    <h1 id="page-title" class="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
-      Analyses des sources<span id="article-title-suffix" class="text-primary italic"></span>
+    <h1 class="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
+      <span id="page-title-prefix">Analyses des sources</span><span id="article-title-suffix" class="text-primary italic"></span>
     </h1>
     <p class="text-lg text-slate-500 mb-12">
       Retrouvez ici l'ensemble des sources décortiquées, synthétisées et vérifiées par notre comité d'experts en intelligence artificielle.
@@ -76,10 +76,11 @@ const sortedFiches = allFiches.sort((a, b) =>
         breadcrumb.classList.remove('hidden');
       }
 
+      const titlePrefix = document.getElementById('page-title-prefix');
       const titleSuffix = document.getElementById('article-title-suffix');
       const title = articleTitles[articleDate];
-      if (titleSuffix && title) {
-        document.getElementById('page-title').childNodes[0].textContent = 'Analyses de l\u2019article\u00a0: ';
+      if (titlePrefix && titleSuffix && title) {
+        titlePrefix.textContent = 'Analyses de l\u2019article\u00a0: ';
         titleSuffix.textContent = title;
       }
 
