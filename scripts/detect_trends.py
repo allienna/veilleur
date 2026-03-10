@@ -20,7 +20,7 @@ from urllib.parse import urlparse, parse_qs, urlencode
 
 # Import filtering functions from sibling script
 sys.path.insert(0, str(Path(__file__).parent))
-from load_sources import extract_title, detect_theme, is_filtered
+from load_sources import extract_title, detect_theme, is_filtered, gather_raw_files
 
 STOPWORDS = {
     # English
@@ -190,29 +190,24 @@ def compute_trend_score(source_idx: int, sources: list[dict],
     return min(1.0, best_url * 0.5 + best_title * 0.3 + best_kw * 0.2)
 
 
-def extract_publisher(filepath: str, target_date: str) -> str:
+def extract_publisher(filepath: str, target_date: str = "") -> str:
     """Extract publisher name from filename, e.g. 'tldrnewsletter' from
-    '2026-03-09-newsletter-tldrnewsletter-1009.json'."""
-    stem = Path(filepath).stem  # e.g. '2026-03-09-newsletter-tldrnewsletter-1009'
-    prefix = f"{target_date}-newsletter-"
-    rest = stem[len(prefix):]  # e.g. 'tldrnewsletter-1009' or 'manual'
-    # Strip trailing 4-digit time suffix if present
-    parts = rest.rsplit('-', 1)
-    if len(parts) == 2 and parts[1].isdigit() and len(parts[1]) == 4:
-        return parts[0]
-    return rest
+    '2026-03-09-newsletter-tldrnewsletter-1009.json'.
+    Uses regex to extract the date from the filename itself, so it works
+    for carry-forward files where the date differs from target_date."""
+    stem = Path(filepath).stem
+    match = re.match(r'\d{4}-\d{2}-\d{2}-newsletter-(.+?)(?:-\d{4})?$', stem)
+    return match.group(1) if match else stem
 
 
-def load_all_sources(target_date: str) -> tuple[list[dict], dict[int, str]]:
+def load_all_sources(target_date: str, carry_forward_days: int = 0) -> tuple[list[dict], dict[int, str]]:
     """Load sources per-newsletter WITHOUT cross-newsletter URL dedup.
 
     Returns (sources, contents) where each source keeps its newsletter origin.
     Same URL in different newsletters = separate entries (needed for trend detection).
     Intra-newsletter dedup and filtering are still applied.
     """
-    data_dir = Path(__file__).parent.parent / 'data' / 'raw'
-    pattern = str(data_dir / f"{target_date}-newsletter-*.json")
-    files = sorted(globmod.glob(pattern))
+    files = gather_raw_files(target_date, carry_forward_days)
 
     sources: list[dict] = []
     contents: dict[int, str] = {}
@@ -254,9 +249,9 @@ def load_all_sources(target_date: str) -> tuple[list[dict], dict[int, str]]:
     return sources, contents
 
 
-def detect_trends(target_date: str) -> dict:
+def detect_trends(target_date: str, carry_forward_days: int = 0) -> dict:
     """Main orchestrator: load sources, detect trends, output structured JSON."""
-    sources, contents = load_all_sources(target_date)
+    sources, contents = load_all_sources(target_date, carry_forward_days)
 
     if not sources:
         return {
@@ -348,5 +343,9 @@ def detect_trends(target_date: str) -> dict:
 
 if __name__ == '__main__':
     target = sys.argv[1] if len(sys.argv) > 1 else date.today().isoformat()
-    output = detect_trends(target)
+    carry = 0
+    if '--carry-forward' in sys.argv:
+        idx = sys.argv.index('--carry-forward')
+        carry = int(sys.argv[idx + 1]) if idx + 1 < len(sys.argv) else 1
+    output = detect_trends(target, carry_forward_days=carry)
     print(json.dumps(output, indent=2, ensure_ascii=False))

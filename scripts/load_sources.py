@@ -13,7 +13,7 @@ import json
 import glob
 import re
 import sys
-from datetime import date
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 # Domains to filter out (marketing, sponsors, tracking)
@@ -65,6 +65,37 @@ THEME_KEYWORDS = {
 
 # Minimum content length to be considered a real article
 MIN_CONTENT_LENGTH = 500
+
+
+def gather_raw_files(target_date: str, carry_forward_days: int = 0) -> list[str]:
+    """Return ordered list of raw file paths for target_date + unprocessed files from previous days."""
+    data_dir = Path(__file__).parent.parent / 'data' / 'raw'
+    output_dir = Path(__file__).parent.parent / 'data' / 'output'
+
+    # Current day files
+    pattern = str(data_dir / f"{target_date}-newsletter-*.json")
+    files = sorted(glob.glob(pattern))
+
+    # Carry-forward: look back N days for unprocessed files
+    if carry_forward_days > 0:
+        current = datetime.strptime(target_date, "%Y-%m-%d")
+        carry_forward_files = []
+        for days_back in range(1, carry_forward_days + 1):
+            prev_date = (current - timedelta(days=days_back)).strftime("%Y-%m-%d")
+            manifest_path = output_dir / f"{prev_date}-processed-files.json"
+            if not manifest_path.exists():
+                continue  # No generation happened that day, or pre-feature
+            with open(manifest_path) as f:
+                manifest = json.load(f)
+            processed = set(manifest.get("files", []))
+            prev_pattern = str(data_dir / f"{prev_date}-newsletter-*.json")
+            prev_files = sorted(glob.glob(prev_pattern))
+            # Unprocessed = files not in manifest
+            late_files = [fp for fp in prev_files if Path(fp).name not in processed]
+            carry_forward_files.extend(late_files)
+        files = carry_forward_files + files
+
+    return files
 
 
 def extract_title(title: str, content: str) -> str:
@@ -128,23 +159,27 @@ def is_filtered(url: str, title: str, content: str) -> tuple[bool, str]:
     return False, ''
 
 
-def load_sources(target_date: str) -> dict:
-    """Load and filter sources for a given date."""
-    data_dir = Path(__file__).parent.parent / 'data' / 'raw'
-    pattern = str(data_dir / f"{target_date}-newsletter-*.json")
-    files = sorted(glob.glob(pattern))
+def load_sources(target_date: str, carry_forward_days: int = 0) -> dict:
+    """Load and filter sources for a given date, with optional carry-forward."""
+    files = gather_raw_files(target_date, carry_forward_days)
 
     if not files:
         return {"date": target_date, "error": f"Aucun fichier trouvé pour {target_date}", "sources": []}
 
     all_links = []
     seen_urls = set()
+    carryforward_count = 0
 
     for filepath in files:
         with open(filepath, 'r') as f:
             data = json.load(f)
 
         newsletter = data.get('newsletter', 'unknown')
+        # Detect if this file is a carry-forward (date prefix != target_date)
+        filename = Path(filepath).name
+        is_carry_forward = not filename.startswith(target_date)
+        original_date = filename[:10] if is_carry_forward else None
+
         for link in data.get('links', []):
             url = link.get('url', '')
             if url in seen_urls:
@@ -158,7 +193,7 @@ def load_sources(target_date: str) -> dict:
             theme = detect_theme(title, content)
             index = len(all_links)
 
-            all_links.append({
+            entry = {
                 'index': index,
                 'url': url,
                 'title': title,
@@ -168,7 +203,13 @@ def load_sources(target_date: str) -> dict:
                 'filter_reason': reason,
                 'content_length': len(content),
                 'has_content': len(content) >= MIN_CONTENT_LENGTH,
-            })
+            }
+            if is_carry_forward:
+                entry['carry_forward'] = True
+                entry['original_date'] = original_date
+                carryforward_count += 1
+
+            all_links.append(entry)
 
     # Separate kept and filtered sources
     kept = [l for l in all_links if not l['filtered']]
@@ -181,9 +222,11 @@ def load_sources(target_date: str) -> dict:
     return {
         "date": target_date,
         "files_loaded": len(files),
+        "files_loaded_paths": [Path(f).name for f in files],
         "total_links": len(all_links),
         "kept": len(kept),
         "filtered": len(filtered),
+        "carryforward_count": carryforward_count,
         "sources": kept,
         "filtered_sources": filtered,
     }
@@ -191,5 +234,9 @@ def load_sources(target_date: str) -> dict:
 
 if __name__ == '__main__':
     target = sys.argv[1] if len(sys.argv) > 1 else date.today().isoformat()
-    result = load_sources(target)
+    carry = 0
+    if '--carry-forward' in sys.argv:
+        idx = sys.argv.index('--carry-forward')
+        carry = int(sys.argv[idx + 1]) if idx + 1 < len(sys.argv) else 1
+    result = load_sources(target, carry_forward_days=carry)
     print(json.dumps(result, indent=2, ensure_ascii=False))

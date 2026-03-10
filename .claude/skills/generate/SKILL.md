@@ -45,17 +45,21 @@ If no article without metrics (`date` field is null), skip to step 1.
 ## 1. Load and filter sources
 
 ```bash
-just sources {DATE}
+just sources {DATE} 3
 ```
 
 This script returns JSON with filtered sources (sponsors removed, duplicates eliminated, grouped by theme).
+The `3` enables carry-forward: sources from late-arriving newsletters (up to 3 days back) that weren't included in previous generations are automatically included.
 
 Display a summary of kept and filtered sources, then ask for confirmation before continuing.
+
+If carry-forward sources are present (`carryforward_count > 0` in the JSON output), display:
+> 📦 {N} sources tardives du {DATE_PRECEDENT} incluses (arrivées après la génération)
 
 ## 1.5 Trend detection
 
 ```bash
-just detect-trends {DATE}
+just detect-trends {DATE} 3
 ```
 
 If trends are detected (clusters with score > 0), display clusters with scores and newsletters.
@@ -65,7 +69,7 @@ If no trends (e.g. single newsletter), skip to step 2.
 ## 2. Read selected source content
 
 ```bash
-just read-content {DATE} 0 1 2 3 ...
+just read-content {DATE} 0 1 2 3 ... --carry-forward 3
 ```
 
 Pass the `index` field values from each kept source (from the `just sources` JSON output). The script returns the first 3000 characters of each source.
@@ -145,6 +149,16 @@ used_in: ["{DATE}"]
 Write all three article files to `data/output/`.
 Create `data/output/` directory if it doesn't exist.
 Fiches are written to `data/fiches/` (already handled in step 4.5).
+
+## 5.1 Record processed files
+
+Save the list of raw files that contributed to this article (enables carry-forward for late-arriving newsletters):
+
+```bash
+just save-processed {DATE} {files_loaded_paths from step 1 JSON output}
+```
+
+The `files_loaded_paths` field from the step 1 JSON output contains the list of raw file basenames to pass here.
 
 ## 5.5 Index to history
 

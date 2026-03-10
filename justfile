@@ -18,21 +18,25 @@ restart-n8n:
 
 # ── Sources & generation ──────────────────────────────────────────
 
-# Load and filter sources for a given date (DATE=YYYY-MM-DD, defaults to today)
-sources DATE="":
-    uv run python3 scripts/load_sources.py {{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }}
+# Load and filter sources for a given date (DATE=YYYY-MM-DD, defaults to today, CARRY=N days carry-forward)
+sources DATE="" CARRY="0":
+    uv run python3 scripts/load_sources.py {{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }} {{ if CARRY != "0" { "--carry-forward " + CARRY } else { "" } }}
 
 # Add a manually found link to the day's sources (fetches via Jina Reader)
 add-link DATE URL:
     uv run python3 scripts/add_link.py {{ DATE }} "{{ URL }}"
 
-# Read full content of sources at given indices (e.g. just read-content 2026-03-07 0 1 2)
-read-content DATE +INDICES:
-    uv run python3 scripts/read_content.py {{ DATE }} {{ INDICES }}
+# Read full content of sources at given indices (e.g. just read-content 2026-03-07 0 1 2, CARRY=N for carry-forward)
+read-content DATE +INDICES_AND_OPTS:
+    uv run python3 scripts/read_content.py {{ DATE }} {{ INDICES_AND_OPTS }}
 
-# Detect cross-newsletter trends for a given date (DATE=YYYY-MM-DD, defaults to today)
-detect-trends DATE="":
-    uv run python3 scripts/detect_trends.py {{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }}
+# Detect cross-newsletter trends for a given date (DATE=YYYY-MM-DD, defaults to today, CARRY=N days carry-forward)
+detect-trends DATE="" CARRY="0":
+    uv run python3 scripts/detect_trends.py {{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }} {{ if CARRY != "0" { "--carry-forward " + CARRY } else { "" } }}
+
+# Save the list of processed raw files after article generation
+save-processed DATE +FILES:
+    uv run python3 scripts/save_processed_files.py {{ DATE }} {{ FILES }}
 
 # Add an image for a given date (copies to site/public/images/DATE.png)
 add-image DATE FILE:
