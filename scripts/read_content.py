@@ -10,16 +10,17 @@ Output: Markdown content of each source on stdout.
 """
 
 import json
-import glob
 import sys
 from pathlib import Path
 
+# Import shared function from sibling script
+sys.path.insert(0, str(Path(__file__).parent))
+from load_sources import gather_raw_files
 
-def read_content(target_date: str, indices: list[int]) -> None:
+
+def read_content(target_date: str, indices: list[int], carry_forward_days: int = 0) -> None:
     """Print the content of sources at the given indices."""
-    data_dir = Path(__file__).parent.parent / 'data' / 'raw'
-    pattern = str(data_dir / f"{target_date}-newsletter-*.json")
-    files = sorted(glob.glob(pattern))
+    files = gather_raw_files(target_date, carry_forward_days)
 
     if not files:
         print(f"Aucun fichier trouvé pour {target_date}", file=sys.stderr)
@@ -63,9 +64,15 @@ def read_content(target_date: str, indices: list[int]) -> None:
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print("Usage: python3 read_content.py DATE INDEX [INDEX ...]", file=sys.stderr)
+        print("Usage: python3 read_content.py DATE INDEX [INDEX ...] [--carry-forward N]", file=sys.stderr)
         sys.exit(1)
 
     target = sys.argv[1]
-    indices = [int(x) for x in sys.argv[2:]]
-    read_content(target, indices)
+    carry = 0
+    args = sys.argv[2:]
+    if '--carry-forward' in args:
+        cf_idx = args.index('--carry-forward')
+        carry = int(args[cf_idx + 1]) if cf_idx + 1 < len(args) else 1
+        args = args[:cf_idx] + args[cf_idx + 2:]
+    indices = [int(x) for x in args]
+    read_content(target, indices, carry_forward_days=carry)
