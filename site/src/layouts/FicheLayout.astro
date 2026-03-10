@@ -41,7 +41,8 @@ const summary = extractSection(body, 'Résumé');
 const whyItMatters = extractSection(body, 'Pourquoi ça compte');
 const keyPointsRaw = extractSection(body, 'Points clés');
 const keyPoints = extractListItems(keyPointsRaw);
-const translation = extractSection(body, 'Traduction française');
+const translation = extractSection(body, 'Analyse approfondie');
+const googleTranslateUrl = `https://translate.google.com/translate?sl=auto&tl=fr&u=${encodeURIComponent(url)}`;
 ---
 
 <BaseLayout title={title}>
@@ -66,27 +67,28 @@ const translation = extractSection(body, 'Traduction française');
 
     {/* Header */}
     <header class="mb-10">
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-block bg-primary text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full mb-4 hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-      >
-        Article original&nbsp;: {domain}
-      </a>
-
       <h1 class="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 leading-[1.1] tracking-tight mb-4">
         {title}
       </h1>
 
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded"
-      >
-        🔗 Consulter la source originale
-      </a>
+      <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block bg-primary text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+        >
+          Article original&nbsp;: {domain}
+        </a>
+        <a
+          href={googleTranslateUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded"
+        >
+           Lire en 🇫🇷 via Google Translate
+        </a>
+      </div>
 
       {/* Metadata grid */}
       <dl class="grid grid-cols-2 md:grid-cols-4 border border-slate-200 rounded-lg mt-6 divide-x divide-y md:divide-y-0 divide-slate-200">
@@ -144,7 +146,7 @@ const translation = extractSection(body, 'Traduction française');
       {/* Left — Traduction française */}
       {translation && (
         <div class="lg:col-span-3">
-          <h2 class="text-2xl font-black text-slate-900 tracking-tight mb-1">Traduction Française</h2>
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight mb-1">Analyse approfondie</h2>
           <div class="w-16 h-1 bg-primary rounded-full mb-6"></div>
           <div class="text-slate-700 leading-relaxed space-y-4">
             {translation.split('\n\n').map((paragraph) => (
