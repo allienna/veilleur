@@ -1,7 +1,8 @@
 import rss from '@astrojs/rss';
+import type { APIContext } from 'astro';
 import { getCollection } from 'astro:content';
 
-export async function GET(context) {
+export async function GET(context: APIContext) {
   const articles = await getCollection('articles');
   const sorted = articles.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
@@ -12,7 +13,7 @@ export async function GET(context) {
     items: sorted.map((article) => ({
       title: article.data.title,
       pubDate: article.data.date,
-      link: `/veilleur/articles/${article.slug}/`,
+      link: new URL(`articles/${article.slug}/`, context.site).toString(),
     })),
   });
 }
