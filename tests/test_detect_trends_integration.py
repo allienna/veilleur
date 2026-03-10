@@ -58,7 +58,7 @@ class TestDetectTrendsIntegration(unittest.TestCase):
             filename_pattern = os.path.basename(pattern)
             return sorted(original_glob(os.path.join(self.tmpdir, filename_pattern), **kwargs))
 
-        with patch('detect_trends.globmod.glob', side_effect=patched_glob):
+        with patch('load_sources.glob.glob', side_effect=patched_glob):
             return detect_trends(self.test_date)
 
     def test_single_newsletter_no_trends(self):

@@ -79,19 +79,27 @@ def gather_raw_files(target_date: str, carry_forward_days: int = 0) -> list[str]
     # Carry-forward: look back N days for unprocessed files
     if carry_forward_days > 0:
         current = datetime.strptime(target_date, "%Y-%m-%d")
+        # Collect all processed filenames from ALL manifests in the lookback window
+        # This prevents re-carrying a file that was already processed by a later day
+        all_processed = set()
+        for days_back in range(0, carry_forward_days + 1):
+            check_date = (current - timedelta(days=days_back)).strftime("%Y-%m-%d")
+            manifest_path = output_dir / f"{check_date}-processed-files.json"
+            if manifest_path.exists():
+                with open(manifest_path) as f:
+                    manifest = json.load(f)
+                all_processed.update(manifest.get("files", []))
+
         carry_forward_files = []
         for days_back in range(1, carry_forward_days + 1):
             prev_date = (current - timedelta(days=days_back)).strftime("%Y-%m-%d")
             manifest_path = output_dir / f"{prev_date}-processed-files.json"
             if not manifest_path.exists():
                 continue  # No generation happened that day, or pre-feature
-            with open(manifest_path) as f:
-                manifest = json.load(f)
-            processed = set(manifest.get("files", []))
             prev_pattern = str(data_dir / f"{prev_date}-newsletter-*.json")
             prev_files = sorted(glob.glob(prev_pattern))
-            # Unprocessed = files not in manifest
-            late_files = [fp for fp in prev_files if Path(fp).name not in processed]
+            # Unprocessed = files not in ANY manifest
+            late_files = [fp for fp in prev_files if Path(fp).name not in all_processed]
             carry_forward_files.extend(late_files)
         files = carry_forward_files + files
 
@@ -207,13 +215,15 @@ def load_sources(target_date: str, carry_forward_days: int = 0) -> dict:
             if is_carry_forward:
                 entry['carry_forward'] = True
                 entry['original_date'] = original_date
-                carryforward_count += 1
 
             all_links.append(entry)
 
     # Separate kept and filtered sources
     kept = [l for l in all_links if not l['filtered']]
     filtered = [l for l in all_links if l['filtered']]
+
+    # Count only kept (non-filtered) carry-forward sources
+    carryforward_count = sum(1 for s in kept if s.get('carry_forward'))
 
     # Sort by theme (IA first)
     theme_order = {'IA': 0, 'Leadership': 1, 'Data': 2, 'Tech': 3, 'Autre': 4}

@@ -9,7 +9,6 @@ Usage:
 Output: JSON on stdout with trend clusters and scores.
 """
 
-import glob as globmod
 import json
 import re
 import sys
@@ -196,7 +195,7 @@ def extract_publisher(filepath: str, target_date: str = "") -> str:
     Uses regex to extract the date from the filename itself, so it works
     for carry-forward files where the date differs from target_date."""
     stem = Path(filepath).stem
-    match = re.match(r'\d{4}-\d{2}-\d{2}-newsletter-(.+?)(?:-\d{4})?$', stem)
+    match = re.match(r'\d{4}-\d{2}-\d{2}-newsletter-(.+?)(?:-\d{4,6})?$', stem)
     return match.group(1) if match else stem
 
 

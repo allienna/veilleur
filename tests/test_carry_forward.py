@@ -3,6 +3,7 @@
 
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -48,133 +49,32 @@ def _make_link(url, title="Test Article", content_length=600):
     }
 
 
+def _patch_paths(tmp_path):
+    """Context manager to redirect gather_raw_files paths to tmp_path."""
+    return patch.multiple(
+        'load_sources',
+        __file__=str(tmp_path / 'scripts' / 'load_sources.py'),
+    )
+
+
 class TestGatherRawFiles(unittest.TestCase):
+    """Tests for gather_raw_files using actual function with patched paths."""
 
-    def test_no_carryforward(self, ):
-        """Without carry-forward flag, only current day files are returned."""
-        import tempfile
-        with tempfile.TemporaryDirectory() as tmp:
-            tmp_path = Path(tmp)
-            _make_newsletter(tmp_path, "2026-03-10-newsletter-alpha.json", "Alpha", [])
-            _make_newsletter(tmp_path, "2026-03-09-newsletter-beta.json", "Beta", [])
-
-            with patch('load_sources.Path') as mock_path_cls:
-                # We need to patch the data dirs used in gather_raw_files
-                pass
-
-            # Direct test: use the actual function with patched paths
-            import load_sources as ls
-            original_parent = Path(ls.__file__).parent.parent
-            data_dir = tmp_path / 'data' / 'raw'
-
-            import glob as globmod
-            pattern = str(data_dir / "2026-03-10-newsletter-*.json")
-            files = sorted(globmod.glob(pattern))
-            self.assertEqual(len(files), 1)
-            self.assertIn("alpha", files[0])
-
-    def test_gather_with_carryforward_no_manifest(self):
-        """Without a manifest for previous day, no carry-forward happens."""
-        import tempfile
-        with tempfile.TemporaryDirectory() as tmp:
-            tmp_path = Path(tmp)
-            _make_newsletter(tmp_path, "2026-03-10-newsletter-alpha.json", "Alpha", [])
-            _make_newsletter(tmp_path, "2026-03-09-newsletter-beta.json", "Beta", [])
-
-            result = _gather_with_tmp(tmp_path, "2026-03-10", carry_forward_days=1)
-            names = [Path(f).name for f in result]
-            # No manifest for 2026-03-09, so only current day
-            self.assertEqual(names, ["2026-03-10-newsletter-alpha.json"])
-
-    def test_gather_with_carryforward_all_processed(self):
-        """When manifest covers all files, nothing is carried forward."""
-        import tempfile
-        with tempfile.TemporaryDirectory() as tmp:
-            tmp_path = Path(tmp)
-            _make_newsletter(tmp_path, "2026-03-10-newsletter-alpha.json", "Alpha", [])
-            _make_newsletter(tmp_path, "2026-03-09-newsletter-beta.json", "Beta", [])
-            _make_manifest(tmp_path, "2026-03-09", ["2026-03-09-newsletter-beta.json"])
-
-            result = _gather_with_tmp(tmp_path, "2026-03-10", carry_forward_days=1)
-            # Only the current day file
-            names = [Path(f).name for f in result]
-            self.assertEqual(names, ["2026-03-10-newsletter-alpha.json"])
-
-    def test_gather_with_carryforward_late_file(self):
-        """A file not in the manifest is carried forward."""
-        import tempfile
-        with tempfile.TemporaryDirectory() as tmp:
-            tmp_path = Path(tmp)
-            _make_newsletter(tmp_path, "2026-03-10-newsletter-alpha.json", "Alpha", [])
-            _make_newsletter(tmp_path, "2026-03-09-newsletter-beta.json", "Beta", [])
-            _make_newsletter(tmp_path, "2026-03-09-newsletter-gamma-2100.json", "Gamma Late", [])
-            # Manifest only includes beta, not gamma (gamma arrived late)
-            _make_manifest(tmp_path, "2026-03-09", ["2026-03-09-newsletter-beta.json"])
-
-            result = _gather_with_tmp(tmp_path, "2026-03-10", carry_forward_days=1)
-            names = [Path(f).name for f in result]
-            # Carry-forward first, then current day
-            self.assertEqual(names, [
-                "2026-03-09-newsletter-gamma-2100.json",
-                "2026-03-10-newsletter-alpha.json",
-            ])
-
-
-def _gather_with_tmp(tmp_path, target_date, carry_forward_days=0):
-    """Call gather_raw_files with paths redirected to tmp_path."""
-    import load_sources as ls
-    import glob as globmod
-
-    data_dir = tmp_path / 'data' / 'raw'
-    output_dir = tmp_path / 'data' / 'output'
-
-    # Inline reimplementation using the same logic as gather_raw_files
-    # but with custom paths (avoids complex patching)
-    from datetime import datetime, timedelta
-
-    pattern = str(data_dir / f"{target_date}-newsletter-*.json")
-    files = sorted(globmod.glob(pattern))
-
-    if carry_forward_days > 0:
-        current = datetime.strptime(target_date, "%Y-%m-%d")
-        carry_forward_files = []
-        for days_back in range(1, carry_forward_days + 1):
-            prev_date = (current - timedelta(days=days_back)).strftime("%Y-%m-%d")
-            manifest_path = output_dir / f"{prev_date}-processed-files.json"
-            if not manifest_path.exists():
-                continue
-            with open(manifest_path) as f:
-                manifest = json.load(f)
-            processed = set(manifest.get("files", []))
-            prev_pattern = str(data_dir / f"{prev_date}-newsletter-*.json")
-            prev_files = sorted(globmod.glob(prev_pattern))
-            late_files = [fp for fp in prev_files if Path(fp).name not in processed]
-            carry_forward_files.extend(late_files)
-        files = carry_forward_files + files
-
-    return files
-
-
-class TestGatherRawFilesIntegration(unittest.TestCase):
-    """Integration tests using actual gather_raw_files with patched paths."""
-
-    def test_gather_no_carryforward_uses_only_target_date(self):
+    def test_no_carryforward_uses_only_target_date(self):
         """gather_raw_files(date, 0) only returns files for that date."""
-        import tempfile
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             _make_newsletter(tmp_path, "2026-03-10-newsletter-a.json", "A", [])
             _make_newsletter(tmp_path, "2026-03-09-newsletter-b.json", "B", [])
 
-            with _patch_gather_paths(tmp_path):
+            with _patch_paths(tmp_path):
                 result = gather_raw_files("2026-03-10", carry_forward_days=0)
 
             names = [Path(f).name for f in result]
             self.assertEqual(names, ["2026-03-10-newsletter-a.json"])
 
-    def test_gather_carryforward_includes_late_files(self):
-        """gather_raw_files with carry-forward includes unprocessed previous files."""
-        import tempfile
+    def test_carryforward_includes_late_files(self):
+        """Unprocessed files from previous day are carried forward."""
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             _make_newsletter(tmp_path, "2026-03-10-newsletter-a.json", "A", [])
@@ -182,79 +82,76 @@ class TestGatherRawFilesIntegration(unittest.TestCase):
             _make_newsletter(tmp_path, "2026-03-09-newsletter-c-2100.json", "C", [])
             _make_manifest(tmp_path, "2026-03-09", ["2026-03-09-newsletter-b.json"])
 
-            with _patch_gather_paths(tmp_path):
+            with _patch_paths(tmp_path):
                 result = gather_raw_files("2026-03-10", carry_forward_days=1)
 
             names = [Path(f).name for f in result]
-            self.assertIn("2026-03-09-newsletter-c-2100.json", names)
-            self.assertIn("2026-03-10-newsletter-a.json", names)
-            # Carry-forward comes first
+            # Carry-forward comes first, then current day
             self.assertEqual(names[0], "2026-03-09-newsletter-c-2100.json")
+            self.assertIn("2026-03-10-newsletter-a.json", names)
 
-    def test_gather_carryforward_no_manifest_skips(self):
+    def test_carryforward_no_manifest_skips(self):
         """Without manifest, previous day files are not carried forward."""
-        import tempfile
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             _make_newsletter(tmp_path, "2026-03-10-newsletter-a.json", "A", [])
             _make_newsletter(tmp_path, "2026-03-09-newsletter-b.json", "B", [])
 
-            with _patch_gather_paths(tmp_path):
+            with _patch_paths(tmp_path):
                 result = gather_raw_files("2026-03-10", carry_forward_days=1)
 
             names = [Path(f).name for f in result]
             self.assertEqual(names, ["2026-03-10-newsletter-a.json"])
 
-    def test_gather_carryforward_all_processed_skips(self):
+    def test_carryforward_all_processed_skips(self):
         """When all previous files are in the manifest, nothing is carried forward."""
-        import tempfile
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             _make_newsletter(tmp_path, "2026-03-10-newsletter-a.json", "A", [])
             _make_newsletter(tmp_path, "2026-03-09-newsletter-b.json", "B", [])
             _make_manifest(tmp_path, "2026-03-09", ["2026-03-09-newsletter-b.json"])
 
-            with _patch_gather_paths(tmp_path):
+            with _patch_paths(tmp_path):
                 result = gather_raw_files("2026-03-10", carry_forward_days=1)
 
             names = [Path(f).name for f in result]
             self.assertEqual(names, ["2026-03-10-newsletter-a.json"])
 
-    def test_gather_carryforward_multiple_days(self):
+    def test_carryforward_multiple_days(self):
         """Carry-forward looks back multiple days."""
-        import tempfile
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             _make_newsletter(tmp_path, "2026-03-10-newsletter-a.json", "A", [])
             _make_newsletter(tmp_path, "2026-03-08-newsletter-old.json", "Old", [])
             _make_manifest(tmp_path, "2026-03-08", [])  # Empty manifest = all files are late
 
-            with _patch_gather_paths(tmp_path):
+            with _patch_paths(tmp_path):
                 result = gather_raw_files("2026-03-10", carry_forward_days=3)
 
             names = [Path(f).name for f in result]
             self.assertIn("2026-03-08-newsletter-old.json", names)
 
+    def test_carryforward_already_processed_by_later_day(self):
+        """A file carried forward and processed by day X should not be carried again on day X+1."""
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            _make_newsletter(tmp_path, "2026-03-11-newsletter-a.json", "A", [])
+            _make_newsletter(tmp_path, "2026-03-09-newsletter-b.json", "B", [])
+            _make_newsletter(tmp_path, "2026-03-09-newsletter-late.json", "Late", [])
+            # Day 09 manifest: only b was processed
+            _make_manifest(tmp_path, "2026-03-09", ["2026-03-09-newsletter-b.json"])
+            # Day 10 manifest: late was carried forward and processed
+            _make_manifest(tmp_path, "2026-03-10", [
+                "2026-03-10-newsletter-x.json",
+                "2026-03-09-newsletter-late.json",
+            ])
 
-def _patch_gather_paths(tmp_path):
-    """Context manager to redirect gather_raw_files paths to tmp_path."""
-    from unittest.mock import patch as _patch
+            with _patch_paths(tmp_path):
+                result = gather_raw_files("2026-03-11", carry_forward_days=3)
 
-    original_gather = gather_raw_files.__wrapped__ if hasattr(gather_raw_files, '__wrapped__') else None
-
-    # Patch Path(__file__).parent.parent to return tmp_path
-    import load_sources as ls
-    real_file_path = Path(ls.__file__)
-    fake_parent_parent = tmp_path
-
-    class FakePath(type(real_file_path)):
-        pass
-
-    # Simplest approach: patch the module-level path computation
-    return _patch.multiple(
-        'load_sources',
-        __file__=str(tmp_path / 'scripts' / 'load_sources.py'),
-    )
+            names = [Path(f).name for f in result]
+            # late.json should NOT appear — it was already processed on day 10
+            self.assertNotIn("2026-03-09-newsletter-late.json", names)
 
 
 class TestLoadSourcesCarryForward(unittest.TestCase):
@@ -262,7 +159,6 @@ class TestLoadSourcesCarryForward(unittest.TestCase):
 
     def test_carryforward_sources_are_tagged(self):
         """Sources from carry-forward files get carry_forward=True and original_date."""
-        import tempfile
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             link_a = _make_link("https://example.com/a", "AI Article A")
@@ -271,24 +167,39 @@ class TestLoadSourcesCarryForward(unittest.TestCase):
             _make_newsletter(tmp_path, "2026-03-09-newsletter-beta.json", "Beta", [link_b])
             _make_manifest(tmp_path, "2026-03-09", [])  # Empty = beta is "late"
 
-            with _patch_gather_paths(tmp_path):
+            with _patch_paths(tmp_path):
                 result = load_sources("2026-03-10", carry_forward_days=1)
 
             self.assertEqual(result['carryforward_count'], 1)
-            # Find the carry-forward source
             cf_sources = [s for s in result['sources'] if s.get('carry_forward')]
             self.assertEqual(len(cf_sources), 1)
             self.assertEqual(cf_sources[0]['original_date'], '2026-03-09')
 
+    def test_carryforward_count_excludes_filtered(self):
+        """carryforward_count only counts kept (non-filtered) sources."""
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            # A link too short to pass filtering
+            short_link = {"url": "https://example.com/short", "title": "Short", "content": "tiny"}
+            good_link = _make_link("https://example.com/good", "Good AI Article")
+            _make_newsletter(tmp_path, "2026-03-10-newsletter-a.json", "A", [])
+            _make_newsletter(tmp_path, "2026-03-09-newsletter-b.json", "B", [short_link, good_link])
+            _make_manifest(tmp_path, "2026-03-09", [])
+
+            with _patch_paths(tmp_path):
+                result = load_sources("2026-03-10", carry_forward_days=1)
+
+            # Only 1 kept carry-forward (the short one is filtered)
+            self.assertEqual(result['carryforward_count'], 1)
+
     def test_no_carryforward_no_tags(self):
         """Without carry-forward, no sources have carry_forward tag."""
-        import tempfile
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             link_a = _make_link("https://example.com/a", "AI Article A")
             _make_newsletter(tmp_path, "2026-03-10-newsletter-alpha.json", "Alpha", [link_a])
 
-            with _patch_gather_paths(tmp_path):
+            with _patch_paths(tmp_path):
                 result = load_sources("2026-03-10", carry_forward_days=0)
 
             self.assertEqual(result['carryforward_count'], 0)
@@ -297,13 +208,12 @@ class TestLoadSourcesCarryForward(unittest.TestCase):
 
     def test_files_loaded_paths_in_output(self):
         """Output includes files_loaded_paths with basenames."""
-        import tempfile
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             link_a = _make_link("https://example.com/a", "Article")
             _make_newsletter(tmp_path, "2026-03-10-newsletter-alpha.json", "Alpha", [link_a])
 
-            with _patch_gather_paths(tmp_path):
+            with _patch_paths(tmp_path):
                 result = load_sources("2026-03-10")
 
             self.assertIn('files_loaded_paths', result)
@@ -314,27 +224,16 @@ class TestSaveManifest(unittest.TestCase):
 
     def test_writes_manifest(self):
         """save_manifest writes a valid JSON manifest."""
-        import tempfile
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             output_dir = tmp_path / 'data' / 'output'
-
-            with patch('save_processed_files.Path') as MockPath:
-                # Redirect __file__ parent.parent
-                mock_file = type(Path())('fake')
-                MockPath.return_value = mock_file
-                MockPath.__truediv__ = Path.__truediv__
-
-            # Direct approach: call with patched paths
-            from save_processed_files import save_manifest as sm
             output_dir.mkdir(parents=True, exist_ok=True)
 
-            # Patch Path(__file__).parent.parent
             import save_processed_files as spf
             original = spf.__file__
             spf.__file__ = str(tmp_path / 'scripts' / 'save_processed_files.py')
             try:
-                sm("2026-03-09", ["file1.json", "file2.json"])
+                save_manifest("2026-03-09", ["file1.json", "file2.json"])
             finally:
                 spf.__file__ = original
 
@@ -357,9 +256,16 @@ class TestExtractPublisherRegex(unittest.TestCase):
             "tldrnewsletter",
         )
 
-    def test_name_with_time_suffix(self):
+    def test_name_with_4digit_time_suffix(self):
         self.assertEqual(
             extract_publisher("2026-03-09-newsletter-tldrnewsletter-1009.json"),
+            "tldrnewsletter",
+        )
+
+    def test_name_with_6digit_time_suffix(self):
+        """n8n generates HHMMSS timestamps (e.g. 100923 for 10:09:23)."""
+        self.assertEqual(
+            extract_publisher("2026-03-09-newsletter-tldrnewsletter-100923.json"),
             "tldrnewsletter",
         )
 
