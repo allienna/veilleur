@@ -13,7 +13,7 @@ export async function getStaticPaths() {
   const tagMap = new Map<string, { articles: typeof articles; fiches: typeof fiches }>();
 
   const addTag = (tag: string) => {
-    const key = tag.toLowerCase().replace(/\s+/g, '-');
+    const key = tag.toLowerCase().replace(/\s+/g, '-').replace(/\//g, '-');
     if (!tagMap.has(key)) {
       tagMap.set(key, { articles: [], fiches: [] });
     }

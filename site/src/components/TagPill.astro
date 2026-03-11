@@ -6,7 +6,7 @@ interface Props {
 
 const { tag, href } = Astro.props;
 const base = import.meta.env.BASE_URL;
-const linkHref = href ?? `${base}/tags/${encodeURIComponent(tag.toLowerCase().replace(/\s+/g, '-'))}`;
+const linkHref = href ?? `${base}/tags/${encodeURIComponent(tag.toLowerCase().replace(/\s+/g, '-').replace(/\//g, '-'))}`;
 ---
 
 <a
