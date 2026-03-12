@@ -17,7 +17,7 @@ export async function GET(context: APIContext) {
     ...blogPosts.map((post) => ({
       title: post.data.title,
       pubDate: post.data.date,
-      description: post.data.description,
+      ...(post.data.description ? { description: post.data.description } : {}),
       link: new URL(`blog/${post.slug}/`, context.site).toString(),
     })),
   ].sort((a, b) => b.pubDate.valueOf() - a.pubDate.valueOf());
