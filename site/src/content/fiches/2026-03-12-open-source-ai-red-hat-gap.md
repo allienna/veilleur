@@ -11,7 +11,7 @@ used_in: ["2026-03-12"]
 
 ## Résumé
 
-L'IA open source (techniquement open weight) atteint la parité avec les modèles frontière, à un coût 8 fois moindre. Des entreprises tech majeures comme Airbnb et Social Capital migrent déjà vers ces modèles. Mais il manque un acteur clé : l'équivalent de Red Hat pour l'IA — une entreprise qui packagge l'IA open source pour les entreprises régulées avec support, certifications et SLA.
+L'IA open source (techniquement open weight) atteint la parité avec les modèles frontière, à un coût 8 fois moindre. Des entreprises tech majeures comme Airbnb et Social Capital migrent déjà vers ces modèles. Mais il manque un acteur clé : l'équivalent de Red Hat pour l'IA — une entreprise qui package l'IA open source pour les entreprises régulées avec support, certifications et SLA.
 
 ## Points clés
 
