@@ -42,6 +42,7 @@ Each `newsletter-X.json` contains:
 ## Available skills
 
 - `/generate` — Generate the daily article (filter, write, push to Notion). Writing rules are in `.claude/skills/generate/writing-guide.md`
+- `/blog <slug>` — Publish a personal blog post to the site (separate from tech watch articles)
 - `/sources` — Display today's sources sorted by theme priority
 - `/search` — Semantic search in article history
 - `/ship` — Create branch, commit, push and open a PR
@@ -85,6 +86,7 @@ Use `just` recipes for all operations. Run `just` to see available recipes.
 - `just site` — Install deps and start Astro dev server
 - `just export-site-data` — Export ChromaDB/SQLite data to JSON for the site
 - `just add-image DATE FILE` — Copy an image to `site/public/images/`
+- `just add-blog-image SLUG FILE` — Copy an image for a blog post to `site/public/images/`
 
 ### Tests
 - `just test` — Run all tests
@@ -102,7 +104,8 @@ A static site built with Astro, deployed on GitHub Pages at `https://allienna.gi
 site/
 ├── src/
 │   ├── content/
-│   │   ├── articles/          # Article markdown files (YYYY-MM-DD.md)
+│   │   ├── articles/          # Tech watch articles (YYYY-MM-DD.md)
+│   │   ├── blog/              # Personal blog posts (slug.md)
 │   │   └── fiches/            # Source fiches
 │   ├── layouts/
 │   │   ├── BaseLayout.astro   # Header, footer, fonts (Poppins + Work Sans)
@@ -120,7 +123,7 @@ site/
 └── astro.config.mjs           # base: '/veilleur', output: 'static'
 ```
 
-### Article frontmatter
+### Article frontmatter (tech watch)
 
 ```yaml
 title: "Article title"
@@ -131,6 +134,18 @@ image: 2026-03-09.png
 ```
 
 Sources and "Pour aller plus loin" sections are parsed from the markdown body by `ArticleLayout.astro`.
+
+### Blog post frontmatter (personal articles)
+
+```yaml
+title: "Post title"
+date: 2026-03-12
+description: "Short description for cards and OG meta"
+themes: [Data, Architecture]
+image: my-post-slug.png
+```
+
+Blog posts use `BlogLayout.astro` (no sources parsing, no fiches, no AI disclaimer). They appear mixed with tech watch articles on the homepage, sorted by date, with distinct badges ("Veille" amber / "Article" navy).
 
 ### Local development
 

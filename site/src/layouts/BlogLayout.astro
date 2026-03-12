@@ -1,0 +1,85 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import TagPill from '../components/TagPill.astro';
+
+interface Props {
+  title: string;
+  date: Date;
+  themes: string[];
+  description: string;
+  minutesRead?: string;
+  image?: string;
+}
+
+const { title, date, themes, description, minutesRead, image } = Astro.props;
+
+const base = import.meta.env.BASE_URL;
+const dateStr = date.toISOString().slice(0, 10);
+
+const formattedDate = date.toLocaleDateString('fr-FR', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+});
+
+const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veilleur.svg`;
+---
+
+<BaseLayout title={title} description={description} image={image} type="article" publishedDate={date.toISOString()}>
+  {/* Hero image — full width with gradient overlay */}
+  <section class="w-full bg-slate-200">
+    <div class="aspect-[16/9] w-full max-h-[70vh] relative overflow-hidden">
+      <img
+        src={imageUrl}
+        alt={image ? title : 'Illustration Le Veilleur'}
+        class="w-full h-full object-cover"
+        width="1600"
+        height="900"
+        loading="eager"
+      />
+      <div class="absolute inset-0 bg-gradient-to-t from-background-dark/80 to-transparent"></div>
+    </div>
+  </section>
+
+  {/* Article card — overlapping the hero */}
+  <article class="max-w-[800px] mx-auto px-4 -mt-24 relative z-10 bg-background-light rounded-t-3xl pt-12 pb-20">
+
+    {/* Badge + Tags */}
+    <div class="flex flex-wrap items-center gap-2 mb-6">
+      <span class="px-3 py-1 rounded-full bg-navy-custom text-white text-xs font-bold uppercase tracking-widest">Article</span>
+      {themes.map((theme) => <TagPill tag={theme} />)}
+    </div>
+
+    {/* Title */}
+    <h1 class="text-4xl md:text-6xl font-black leading-[1.1] mb-6 text-slate-900 tracking-tight">
+      {title}
+    </h1>
+
+    {/* Author bar */}
+    <div class="flex items-center gap-4 mb-10 pb-10 border-b border-slate-200">
+      <img src={`${base}/images/avatar.jpg`} alt="Aurélien Allienne" class="size-12 rounded-full object-cover shrink-0" />
+      <div>
+        <p class="font-bold text-slate-900">Aurélien Allienne</p>
+        <p class="text-sm text-slate-500">
+          Publié le <time datetime={dateStr}>{formattedDate}</time>
+          {minutesRead && <span> • {minutesRead.replace('min read', 'min de lecture')}</span>}
+        </p>
+      </div>
+    </div>
+
+    {/* Body */}
+    <div class="prose prose-slate max-w-none text-lg leading-relaxed
+      prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-900
+      prose-h2:text-3xl prose-h2:pt-4 prose-h3:text-2xl prose-h3:pt-6 prose-h3:mt-2
+      prose-a:text-primary prose-a:underline prose-a:decoration-primary/30 hover:prose-a:decoration-primary
+      prose-strong:text-slate-900
+      prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:py-2 prose-blockquote:italic prose-blockquote:text-2xl prose-blockquote:font-light prose-blockquote:text-slate-600
+      prose-p:text-slate-700 prose-p:leading-relaxed
+      prose-li:text-slate-700
+      prose-img:rounded-xl prose-img:shadow-md
+      prose-pre:rounded-xl prose-pre:bg-slate-900
+      article-intro">
+      <slot />
+    </div>
+  </article>
+</BaseLayout>

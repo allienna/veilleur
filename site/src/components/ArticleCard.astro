@@ -8,12 +8,15 @@ interface Props {
   themes: string[];
   sources?: number;
   image?: string;
+  href?: string;
+  kind?: 'veille' | 'blog';
 }
 
-const { slug, title, date, themes, sources, image } = Astro.props;
+const { slug, title, date, themes, sources, image, href, kind = 'veille' } = Astro.props;
 
 const base = import.meta.env.BASE_URL;
 const dateStr = date.toISOString().slice(0, 10);
+const link = href || `${base}/articles/${slug}`;
 
 const formattedDate = date.toLocaleDateString('fr-FR', {
   day: '2-digit',
@@ -22,12 +25,24 @@ const formattedDate = date.toLocaleDateString('fr-FR', {
 });
 
 const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veilleur.svg`;
+
+const isBlog = kind === 'blog';
+
+const badgeConfig = {
+  veille: { label: 'Veille', badgeClass: 'bg-primary text-slate-900' },
+  blog: { label: 'Article', badgeClass: 'bg-navy-custom text-white' },
+};
+const badge = badgeConfig[kind];
+
+const borderClass = isBlog
+  ? 'ring-2 ring-navy-custom/30'
+  : 'border border-slate-100';
 ---
 
 <article class="flex flex-col group cursor-pointer">
   <a
-    href={`${base}/articles/${slug}`}
-    class="w-full aspect-video rounded-xl mb-5 shadow-sm overflow-hidden border border-slate-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+    href={link}
+    class={`w-full aspect-video rounded-xl mb-5 shadow-sm overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 relative ${borderClass}`}
     aria-label={`Lire l'article : ${title}`}
     tabindex="-1"
     aria-hidden="true"
@@ -40,6 +55,9 @@ const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veille
       height="450"
       loading="lazy"
     />
+    <span class={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${badge.badgeClass}`}>
+      {badge.label}
+    </span>
   </a>
 
   {themes.length > 0 && (
@@ -50,7 +68,7 @@ const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veille
 
   <h2 class="text-xl font-bold mb-2 group-hover:text-primary transition-colors leading-snug">
     <a
-      href={`${base}/articles/${slug}`}
+      href={link}
       class="focus:outline-none focus:ring-2 focus:ring-primary rounded"
     >
       {title}
@@ -59,6 +77,9 @@ const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veille
 
   <p class="text-slate-500 text-sm font-medium">
     <time datetime={dateStr}>{formattedDate}</time>
-    {sources !== undefined && <span> • {sources} source{sources > 1 ? 's' : ''}</span>}
+    {isBlog
+      ? <span class="ml-1.5 inline-block px-2 py-0.5 rounded bg-navy-custom/10 text-navy-custom text-xs font-semibold align-middle">Billet personnel</span>
+      : sources !== undefined && <span> • {sources} source{sources > 1 ? 's' : ''}</span>
+    }
   </p>
 </article>

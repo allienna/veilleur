@@ -44,6 +44,12 @@ add-image DATE FILE:
     cp "{{ FILE }}" "site/public/images/{{ DATE }}.png"
     @echo "Image saved to site/public/images/{{ DATE }}.png"
 
+# Add an image for a blog post (copies to site/public/images/SLUG.png)
+add-blog-image SLUG FILE:
+    mkdir -p site/public/images
+    cp "{{ FILE }}" "site/public/images/{{ SLUG }}.png"
+    @echo "Image saved to site/public/images/{{ SLUG }}.png"
+
 # ── History & search ──────────────────────────────────────────────
 
 # Index an article into ChromaDB (DATE=YYYY-MM-DD, defaults to today)

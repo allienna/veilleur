@@ -4,18 +4,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleCard from '../../components/ArticleCard.astro';
 
 export async function getStaticPaths() {
-  const [articles, fiches] = await Promise.all([
+  const [articles, blogPosts, fiches] = await Promise.all([
     getCollection('articles'),
+    getCollection('blog'),
     getCollection('fiches'),
   ]);
 
-  // Collect all tags from articles (themes) and fiches (keywords + theme)
-  const tagMap = new Map<string, { articles: typeof articles; fiches: typeof fiches }>();
+  const tagMap = new Map<string, { articles: typeof articles; blogPosts: typeof blogPosts; fiches: typeof fiches }>();
 
   const addTag = (tag: string) => {
     const key = tag.toLowerCase().replace(/\s+/g, '-').replace(/\//g, '-');
     if (!tagMap.has(key)) {
-      tagMap.set(key, { articles: [], fiches: [] });
+      tagMap.set(key, { articles: [], blogPosts: [], fiches: [] });
     }
     return key;
   };
@@ -24,6 +24,13 @@ export async function getStaticPaths() {
     for (const theme of article.data.themes) {
       const key = addTag(theme);
       tagMap.get(key)!.articles.push(article);
+    }
+  }
+
+  for (const post of blogPosts) {
+    for (const theme of post.data.themes) {
+      const key = addTag(theme);
+      tagMap.get(key)!.blogPosts.push(post);
     }
   }
 
@@ -44,6 +51,9 @@ export async function getStaticPaths() {
       matchedArticles: data.articles.sort(
         (a, b) => b.data.date.getTime() - a.data.date.getTime()
       ),
+      matchedBlogPosts: data.blogPosts.sort(
+        (a, b) => b.data.date.getTime() - a.data.date.getTime()
+      ),
       matchedFiches: data.fiches,
     },
   }));
@@ -52,15 +62,18 @@ export async function getStaticPaths() {
 interface Props {
   tagLabel: string;
   matchedArticles: Awaited<ReturnType<typeof getCollection<'articles'>>>;
+  matchedBlogPosts: Awaited<ReturnType<typeof getCollection<'blog'>>>;
   matchedFiches: Awaited<ReturnType<typeof getCollection<'fiches'>>>;
 }
 
-const { tagLabel, matchedArticles, matchedFiches } = Astro.props;
+const { tagLabel, matchedArticles, matchedBlogPosts, matchedFiches } = Astro.props;
 
 const base = import.meta.env.BASE_URL;
 
 // Human-readable label from slug
 const displayLabel = tagLabel.replace(/-/g, ' ');
+
+const totalArticles = matchedArticles.length + matchedBlogPosts.length;
 ---
 
 <BaseLayout title={`Tag : ${displayLabel}`}>
@@ -84,14 +97,14 @@ const displayLabel = tagLabel.replace(/-/g, ' ');
     <p class="text-sm font-medium text-amber-500 uppercase tracking-widest mb-3">Tag</p>
     <h1 class="text-4xl md:text-5xl font-black tracking-tight capitalize text-slate-900">{displayLabel}</h1>
     <p class="text-slate-500 mt-3 text-lg">
-      {matchedArticles.length} article{matchedArticles.length !== 1 ? 's' : ''}
+      {totalArticles} article{totalArticles !== 1 ? 's' : ''}
       {matchedFiches.length > 0 && ` · ${matchedFiches.length} fiche${matchedFiches.length !== 1 ? 's' : ''}`}
     </p>
   </div>
 
   {/* Content */}
   <div class="max-w-6xl mx-auto px-6 py-12">
-    {matchedArticles.length > 0 && (
+    {(matchedArticles.length > 0 || matchedBlogPosts.length > 0) && (
       <section aria-labelledby="articles-heading">
         <div class="flex items-center justify-between border-b border-slate-200 pb-6 mb-10">
           <h2 id="articles-heading" class="text-2xl md:text-3xl font-bold tracking-tight">Articles</h2>
@@ -105,6 +118,18 @@ const displayLabel = tagLabel.replace(/-/g, ' ');
               themes={article.data.themes}
               sources={article.data.sources}
               image={article.data.image}
+              kind="veille"
+            />
+          ))}
+          {matchedBlogPosts.map((post) => (
+            <ArticleCard
+              slug={post.slug}
+              title={post.data.title}
+              date={post.data.date}
+              themes={post.data.themes}
+              image={post.data.image}
+              href={`${base}/blog/${post.slug}`}
+              kind="blog"
             />
           ))}
         </div>
@@ -112,7 +137,7 @@ const displayLabel = tagLabel.replace(/-/g, ' ');
     )}
 
     {matchedFiches.length > 0 && (
-      <section aria-labelledby="fiches-heading" class={matchedArticles.length > 0 ? 'mt-16' : ''}>
+      <section aria-labelledby="fiches-heading" class={totalArticles > 0 ? 'mt-16' : ''}>
         <div class="flex items-center justify-between border-b border-slate-200 pb-6 mb-10">
           <h2 id="fiches-heading" class="text-2xl md:text-3xl font-bold tracking-tight">Fiches sources</h2>
         </div>
@@ -141,7 +166,7 @@ const displayLabel = tagLabel.replace(/-/g, ' ');
       </section>
     )}
 
-    {matchedArticles.length === 0 && matchedFiches.length === 0 && (
+    {totalArticles === 0 && matchedFiches.length === 0 && (
       <p class="text-slate-500 text-center py-20 text-lg">Aucun contenu trouvé pour ce tag.</p>
     )}
   </div>
