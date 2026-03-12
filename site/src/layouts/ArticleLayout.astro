@@ -81,12 +81,11 @@ const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veille
   {/* Article card — overlapping the hero */}
   <article class="max-w-[800px] mx-auto px-4 -mt-24 relative z-10 bg-background-light rounded-t-3xl pt-12 pb-20">
 
-    {/* Tags */}
-    {themes.length > 0 && (
-      <div class="flex flex-wrap gap-2 mb-6">
-        {themes.map((theme) => <TagPill tag={theme} />)}
-      </div>
-    )}
+    {/* Badge + Tags */}
+    <div class="flex flex-wrap items-center gap-2 mb-6">
+      <span class="px-3 py-1 rounded-full bg-primary/20 text-amber-700 text-xs font-bold uppercase tracking-widest">Veille</span>
+      {themes.map((theme) => <TagPill tag={theme} />)}
+    </div>
 
     {/* Title */}
     <h1 class="text-4xl md:text-6xl font-black leading-[1.1] mb-6 text-slate-900 tracking-tight">

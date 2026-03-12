@@ -11,6 +11,17 @@ const articles = defineCollection({
   }),
 });
 
+const blog = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    date: z.coerce.date(),
+    description: z.string().optional(),
+    themes: z.array(z.string()).default([]),
+    image: z.string().optional(),
+  }),
+});
+
 const fiches = defineCollection({
   type: 'content',
   schema: z.object({
@@ -25,4 +36,4 @@ const fiches = defineCollection({
   }),
 });
 
-export const collections = { articles, fiches };
+export const collections = { articles, blog, fiches };

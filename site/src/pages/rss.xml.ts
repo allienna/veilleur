@@ -3,17 +3,29 @@ import type { APIContext } from 'astro';
 import { getCollection } from 'astro:content';
 
 export async function GET(context: APIContext) {
-  const articles = await getCollection('articles');
-  const sorted = articles.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  const [articles, blogPosts] = await Promise.all([
+    getCollection('articles'),
+    getCollection('blog'),
+  ]);
 
-  return rss({
-    title: 'Le Veilleur',
-    description: 'Veille technologique quotidienne — articles générés depuis les meilleures newsletters tech.',
-    site: context.site,
-    items: sorted.map((article) => ({
+  const items = [
+    ...articles.map((article) => ({
       title: article.data.title,
       pubDate: article.data.date,
       link: new URL(`articles/${article.slug}/`, context.site).toString(),
     })),
+    ...blogPosts.map((post) => ({
+      title: post.data.title,
+      pubDate: post.data.date,
+      description: post.data.description,
+      link: new URL(`blog/${post.slug}/`, context.site).toString(),
+    })),
+  ].sort((a, b) => b.pubDate.valueOf() - a.pubDate.valueOf());
+
+  return rss({
+    title: 'Le Veilleur',
+    description: 'Veille technologique quotidienne et articles — Aurélien Allienne.',
+    site: context.site,
+    items,
   });
 }
