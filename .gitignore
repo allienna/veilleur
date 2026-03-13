@@ -4,9 +4,9 @@ data/chromadb/
 data/metrics.db
 data/site/images/
 
-# Articles et fiches générés (versionnés pour le déploiement site)
-# data/output/ → tracké
-# data/fiches/ → tracké
+# Articles et fiches générés — copies intermédiaires (les finales sont dans site/src/content/)
+data/output/
+data/fiches/
 
 # n8n local data
 n8n_data/
