@@ -70,6 +70,13 @@ used_in: ["{DATE}"]
 - {key point 3}
 - ...
 
+## Analyse approfondie
+
+{Deep dive into the source content. Expand on the key arguments with specific data points,
+quotes, and examples from the original article. Structure with sub-headings (###) when the
+content warrants it. Typical length: 3-8 paragraphs depending on source richness.
+This section is only generated when raw content is available — skip for sources without raw match.}
+
 ## Pourquoi ça compte
 
 {1-2 sentences on why this source matters for tech watch.}
@@ -83,9 +90,10 @@ used_in: ["{DATE}"]
 - **authors**: Extract from the content if visible (byline, author tag). Fallback to the domain name.
 - **Résumé**: Concise and factual. In French.
 - **Points clés**: In French. 3-5 bullet points capturing the essential takeaways.
+- **Analyse approfondie**: In French. Deep dive with specific data, quotes, examples from the original. Use ### sub-headings for structure. Only when raw content is available.
 - **Pourquoi ça compte**: In French. Connect the source to the broader tech watch narrative.
 
-For sources without raw content, generate a shorter fiche based on the title and URL only (skip Points clés, keep Résumé brief).
+For sources without raw content, generate a shorter fiche based on the title and URL only (skip Points clés, Analyse approfondie, keep Résumé brief).
 
 ## 5. Write to site
 
