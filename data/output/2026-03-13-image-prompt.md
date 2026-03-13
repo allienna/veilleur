@@ -1,0 +1,5 @@
+An expressive cartoon owl mascot called "Le Veilleur": deep navy blue body, large expressive amber eyes, small antenna on top of the head, white chest feathers. Animated cartoon style — think Pixar short or Saturday morning cartoon, colorful, dynamic, full of personality.
+
+Scene: Le Veilleur stands in the center of an old 1890s textile factory being retrofitted. On one side, dusty steam-powered looms with cobwebs. On the other side, modern glowing AI screens and holographic dashboards. The owl is holding a giant lever, dramatically switching from the old machinery to the new tech. But the factory floor is chaotic — small robot workers are bumping into each other, tangled in wires, dropping boxes. A few robots sit idle with "ERROR" signs. The owl looks exasperated but determined, wearing a hard hat with a small lightning bolt symbol. The contrast between the powerful technology available and the organizational chaos on the factory floor tells the story.
+
+Wide 16:9 aspect ratio. No text in the image.
