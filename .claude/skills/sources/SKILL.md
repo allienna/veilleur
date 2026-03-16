@@ -1,17 +1,23 @@
 ---
 name: sources
 description: Display today's sources sorted by theme priority
-argument-hint: "[date]"
+argument-hint: "[date] [CARRY=N]"
 ---
 
 # /sources — Display today's sources
 
-Target date is `$ARGUMENTS` if provided, otherwise today's date (YYYY-MM-DD).
+Arguments: `$ARGUMENTS` (optional).
+
+Parse arguments:
+- First argument matching `YYYY-MM-DD` → DATE (default: today)
+- Argument matching `CARRY=N` or just a number after the date → CARRY (default: 0)
+
+Examples: `/sources`, `/sources 2026-03-15`, `/sources 2026-03-15 CARRY=2`, `/sources 2026-03-15 2`
 
 ## Execution
 
 ```bash
-just sources {DATE}
+just sources {DATE} {CARRY}
 ```
 
 ## Display
