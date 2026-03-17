@@ -104,6 +104,53 @@ site:
 export-site-data:
     uv run python3 scripts/export_site_data.py
 
+# ── NotebookLM ──────────────────────────────────────────────────────
+
+# Create a NotebookLM notebook from daily sources (DATE=YYYY-MM-DD, defaults to today)
+notebook DATE="" *FLAGS="":
+    uv run python3 scripts/create_notebook.py {{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }} {{ FLAGS }}
+
+# ── Sentinel (automation) ──────────────────────────────────────────
+
+# Install sentinel and autopublish launchd agents
+sentinel-install:
+    mkdir -p data/logs
+    cp launchd/com.veilleur.sentinel.plist ~/Library/LaunchAgents/
+    cp launchd/com.veilleur.autopublish.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/com.veilleur.sentinel.plist
+    launchctl load ~/Library/LaunchAgents/com.veilleur.autopublish.plist
+    @echo "Sentinel (20h) and autopublish (23h) installed"
+
+# Check sentinel status
+sentinel-status:
+    @echo "=== Sentinel (20h) ==="
+    @launchctl list | grep com.veilleur.sentinel || echo "Not loaded"
+    @echo "=== Autopublish (23h) ==="
+    @launchctl list | grep com.veilleur.autopublish || echo "Not loaded"
+    @echo "=== Recent logs ==="
+    @ls -la data/logs/*-sentinel.log 2>/dev/null | tail -3 || echo "No sentinel logs"
+    @ls -la data/logs/*-autopublish.log 2>/dev/null | tail -3 || echo "No autopublish logs"
+
+# Show sentinel logs for a date (defaults to today)
+sentinel-logs DATE="":
+    @cat data/logs/{{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }}-sentinel.log 2>/dev/null || echo "No sentinel log"
+    @echo "---"
+    @cat data/logs/{{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }}-autopublish.log 2>/dev/null || echo "No autopublish log"
+
+# Stop all sentinel agents
+sentinel-stop:
+    launchctl unload ~/Library/LaunchAgents/com.veilleur.sentinel.plist 2>/dev/null || true
+    launchctl unload ~/Library/LaunchAgents/com.veilleur.autopublish.plist 2>/dev/null || true
+    @echo "Sentinel agents stopped"
+
+# Run sentinel manually for a specific date (for testing)
+sentinel-run DATE="":
+    uv run python3 scripts/sentinel.py {{ if DATE == "" { "" } else { "--date " + DATE } }}
+
+# Generate image from prompt file via Gemini API
+generate-image DATE:
+    uv run python3 scripts/generate_image.py {{ DATE }}
+
 # ── Tests ─────────────────────────────────────────────────────────
 
 # Run all tests

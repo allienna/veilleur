@@ -15,6 +15,22 @@ Target date is `$ARGUMENTS` if provided, otherwise today's date (YYYY-MM-DD).
 
 Follow these steps in order:
 
+## Mode autonome
+
+If the prompt contains "autonomous mode", apply these overrides:
+- Step 0.5: SKIP entirely
+- Step 1: Execute but DO NOT ask for confirmation — continue directly
+- Step 1.5: Execute but DO NOT ask for confirmation
+- Step 3: Select the narrative AUTONOMOUSLY:
+  - Prioritize trend clusters (score > 0.5)
+  - Then theme priority: IA > Leadership > Data > Tech
+  - Select 6-7 main sources + 3-4 "pour aller plus loin"
+  - DO NOT ask for validation
+- Step 6: SKIP (no Notion push)
+- Step 7: SKIP (no Notion review wait)
+- Step 8: SKIP (no Notion fetch)
+- Step 9: Copy files to site but DO NOT propose /ship
+
 ## 0.5 Metrics feedback
 
 Check if there's a recent article without metrics:
