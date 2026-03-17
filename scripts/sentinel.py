@@ -175,7 +175,12 @@ def main():
         notify("Veilleur — Erreur", f"Échec de la génération pour {target_date}")
         sys.exit(1)
 
-    # Step 2: Generate image via Gemini
+    # Step 2: Create NotebookLM notebook + podcast (fr)
+    result = run_command(["just", "notebook", target_date, "--audio"], logger)
+    if result.returncode != 0:
+        logger.warning("NotebookLM creation failed — continuing")
+
+    # Step 3: Generate image via Gemini
     run_image_generation(target_date, logger)
 
     # Step 3: Notify
