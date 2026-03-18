@@ -58,62 +58,19 @@ def run_command(cmd: list[str], logger: logging.Logger, cwd: Path | None = None)
     return result
 
 
-def check_pr_exists(target_date: str, logger: logging.Logger) -> bool:
-    """Check if a PR already exists for this date."""
-    branch = f"feat/article-{target_date}"
-    result = run_command(["gh", "pr", "list", "--head", branch, "--json", "number"], logger)
-    if result.returncode != 0:
-        logger.warning("Failed to check PRs via gh")
-        return False
-    try:
-        prs = __import__("json").loads(result.stdout)
-        return len(prs) > 0
-    except Exception:
-        return False
-
-
-def run_ship(target_date: str, logger: logging.Logger) -> bool:
-    """Run /ship via Claude CLI."""
-    prompt = f"""Run /ship for article {target_date}. Branch: feat/article-{target_date}.
-Commit all files in data/output/{target_date}-*, data/fiches/{target_date}-*,
-site/src/content/articles/{target_date}.md, site/src/content/fiches/{target_date}-*,
-site/public/images/{target_date}.png (if exists).
-Open PR with title 'feat: add {target_date} article and fiches'."""
-
-    cmd = [
-        "claude", "-p", prompt,
-        "--model", "sonnet",
-        "--allowedTools", "Bash,Read,Write,Edit,Glob,Grep",
-        "--permission-mode", "bypassPermissions",
-        "--max-budget-usd", "2",
+def collect_files(target_date: str) -> list[str]:
+    """Collect all files to commit for the given date."""
+    patterns = [
+        f"data/output/{target_date}-*",
+        f"site/src/content/articles/{target_date}.md",
+        f"site/src/content/fiches/{target_date}-*",
+        f"site/public/images/{target_date}.png",
     ]
-    result = run_command(cmd, logger)
-    if result.returncode != 0:
-        logger.error("Ship step failed")
-        return False
-    logger.info("Ship completed")
-    return True
-
-
-def run_merge(target_date: str, logger: logging.Logger) -> bool:
-    """Run /merge via Claude CLI."""
-    branch = f"feat/article-{target_date}"
-    prompt = f"""Run /merge for the PR on branch {branch}.
-Handle any Copilot review comments, then squash merge."""
-
-    cmd = [
-        "claude", "-p", prompt,
-        "--model", "sonnet",
-        "--allowedTools", "Bash,Read,Write,Edit,Glob,Grep",
-        "--permission-mode", "bypassPermissions",
-        "--max-budget-usd", "2",
-    ]
-    result = run_command(cmd, logger)
-    if result.returncode != 0:
-        logger.error("Merge step failed")
-        return False
-    logger.info("Merge completed")
-    return True
+    files = []
+    for pattern in patterns:
+        found = sorted(PROJECT_ROOT.glob(pattern))
+        files.extend(str(f.relative_to(PROJECT_ROOT)) for f in found)
+    return files
 
 
 def main():
@@ -132,27 +89,50 @@ def main():
         logger.info(f"No article for {target_date} — nothing to publish")
         return
 
-    # Guard: PR must not already exist
-    if check_pr_exists(target_date, logger):
-        logger.info(f"PR already exists for {target_date} — skipping")
+    # Guard: check if already published (site article exists and is committed)
+    result = run_command(
+        ["git", "log", "--oneline", "-1", "--", f"site/src/content/articles/{target_date}.md"],
+        logger,
+    )
+    if result.stdout.strip():
+        logger.info(f"Article {target_date} already committed — skipping")
         return
+
+    # Collect files to commit
+    files = collect_files(target_date)
+    if not files:
+        logger.info("No files to commit")
+        return
+
+    logger.info(f"Files to publish: {files}")
 
     if args.dry_run:
-        logger.info("Dry run — guards passed, would proceed with ship + merge")
-        print(f"Dry run OK: article exists for {target_date}, no PR yet")
+        logger.info("Dry run — guards passed, would commit and push")
+        print(f"Dry run OK: {len(files)} files to publish for {target_date}")
         return
 
-    # Step 1: Ship (create branch, commit, push, open PR)
-    if not run_ship(target_date, logger):
-        notify("Veilleur — Erreur", f"Échec du ship pour {target_date}")
+    # Stage files
+    result = run_command(["git", "add"] + files, logger)
+    if result.returncode != 0:
+        logger.error("Failed to stage files")
+        notify("Veilleur — Erreur", f"Échec du staging pour {target_date}")
         sys.exit(1)
 
-    # Step 2: Merge
-    if not run_merge(target_date, logger):
-        notify("Veilleur — Erreur", f"Échec du merge pour {target_date}")
+    # Commit
+    message = f"feat: add {target_date} article and fiches"
+    result = run_command(["git", "commit", "-m", message], logger)
+    if result.returncode != 0:
+        logger.error("Failed to commit")
+        notify("Veilleur — Erreur", f"Échec du commit pour {target_date}")
         sys.exit(1)
 
-    # Step 3: Notify
+    # Push to main
+    result = run_command(["git", "push"], logger)
+    if result.returncode != 0:
+        logger.error("Failed to push")
+        notify("Veilleur — Erreur", f"Échec du push pour {target_date}")
+        sys.exit(1)
+
     notify("Veilleur — Publié", f"Article du {target_date} publié sur le site")
     logger.info(f"=== Autopublish completed for {target_date} ===")
 
