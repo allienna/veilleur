@@ -183,6 +183,11 @@ def main():
     # Step 3: Generate image via Gemini
     run_image_generation(target_date, logger)
 
+    # Step 4: Generate Instagram carousel + reel
+    result = run_command(["uv", "run", "python3", "scripts/generate_instagram.py", target_date], logger)
+    if result.returncode != 0:
+        logger.warning("Instagram generation failed — continuing")
+
     # Step 3: Notify
     article_file = PROJECT_ROOT / "data" / "output" / f"{target_date}-article.md"
     title = "Article généré"

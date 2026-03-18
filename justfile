@@ -151,6 +151,18 @@ sentinel-run DATE="":
 generate-image DATE:
     uv run python3 scripts/generate_image.py {{ DATE }}
 
+# Generate Instagram carousel + reel from article
+instagram DATE="":
+    uv run python3 scripts/generate_instagram.py {{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }}
+
+# Generate Instagram carousel only (no reel)
+instagram-carousel DATE="":
+    uv run python3 scripts/generate_instagram.py {{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }} --carousel-only
+
+# Install Playwright browser (one-time setup)
+instagram-setup:
+    uv run playwright install chromium
+
 # ── Tests ─────────────────────────────────────────────────────────
 
 # Run all tests
