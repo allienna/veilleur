@@ -155,48 +155,86 @@ def parse_article(date_str: str) -> dict | None:
     }
 
 
-def extract_stats(article: dict) -> list[str]:
-    """Pull provocative numbers/percentages from article sections."""
-    stats = []
-    number_re = re.compile(r'[^.!?]*(?:\d[\d\s]*[\%x]|\d{2,}[\s][a-zA-ZÀ-ÿ]+)[^.!?]*[.!?]')
+def extract_punches(date_str: str, article: dict) -> list[str]:
+    """Extract short, punchy facts from the raw article — numbers, quotes, shocking statements."""
+    punches = []
+
+    # Read raw article for richer content (pre-clean)
+    raw_path = PROJECT_ROOT / "data" / "output" / f"{date_str}-article.md"
+    if raw_path.exists():
+        raw = raw_path.read_text()
+        # Remove front matter
+        raw = re.sub(r'^---\n.*?\n---\n', '', raw, flags=re.DOTALL)
+    else:
+        raw = article.get('intro', '')
+        for sec in article.get('sections', []):
+            raw += ' ' + sec.get('body', '')
+
+    # Strip markdown syntax but keep text
+    raw = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', raw)  # links
+    raw = re.sub(r'^#{1,6}\s+', '', raw, flags=re.MULTILINE)  # headings
+
+    # Sentences with numbers/percentages — the juicy stuff
+    for m in re.finditer(
+        r'[^.!?]*\d[\d\s,.]*(?:%|fois|PRs?|tokens?|secondes?|millions?|milliards?|effectifs?|modèles?)[^.!?]*[.!?]',
+        raw
+    ):
+        s = m.group(0).strip().lstrip('—– ')
+        if 20 < len(s) < 120:
+            punches.append(s.strip('" '))
+
+    # Quoted sentences (> blockquotes, « », " ")
+    for m in re.finditer(r'>\s*"([^"]{20,120})"', raw):
+        punches.append(m.group(1).strip())
+    for m in re.finditer(r'[«"]([^»"]{20,120})[»"]', raw):
+        punches.append(m.group(1).strip())
+
+    # Section titles as punchy statements (fallback)
     for sec in article.get('sections', []):
-        for m in number_re.finditer(sec.get('body', '')):
-            s = m.group(0).strip()
-            if 30 < len(s) < 180:
-                stats.append(s)
-    if article.get('intro'):
-        for m in number_re.finditer(article['intro']):
-            s = m.group(0).strip()
-            if 30 < len(s) < 180:
-                stats.append(s)
-    return stats[:2]
+        title = sec.get('title', '')
+        if title and title.lower() not in ('en bref', 'sources', 'pour aller plus loin'):
+            punches.append(title)
+
+    # Deduplicate while preserving order
+    seen = set()
+    unique = []
+    for p in punches:
+        key = p[:30]
+        if key not in seen:
+            seen.add(key)
+            unique.append(p)
+    return unique
 
 
-def build_teaser_slides(article: dict, hook: str) -> list[Slide]:
-    """4-slide teaser: hook → stat → cliffhanger → CTA."""
+def build_teaser_slides(date_str: str, article: dict, hook: str) -> list[Slide]:
+    """6-slide punchy teaser: hook → 4 facts (alternating dark/light) → CTA."""
     slides: list[Slide] = []
-    stats = extract_stats(article)
+    punches = extract_punches(date_str, article)
 
-    # Slide 1 — hook (same stop-the-scroll opening)
-    slides.append(Slide(type='hook', title=article['title'], body=hook or article['title']))
+    # Slide 1 — Big hook: first two sentences of title
+    title = article.get('title', '')
+    parts = [s.strip() for s in title.split('.') if s.strip()]
+    hook_text = '. '.join(parts[:2]) + '.' if len(parts) >= 2 else title[:80]
+    slides.append(Slide(type='punch_dark', body=hook_text))
 
-    # Slide 2 — most provocative stat
-    if stats:
-        slides.append(Slide(
-            type='teaser_stat',
-            body=stats[0],
-        ))
-    elif article.get('intro'):
-        slides.append(Slide(type='teaser_stat', body=article['intro'][:200]))
+    # Filter out punches too similar to the hook
+    hook_words = set(hook_text.lower().split())
+    filtered = []
+    for p in punches:
+        overlap = len(set(p.lower().split()) & hook_words) / max(len(p.split()), 1)
+        if overlap < 0.5:
+            filtered.append(p)
 
-    # Slide 3 — second stat or a section title as a question
-    if len(stats) >= 2:
-        slides.append(Slide(type='teaser_stat', body=stats[1]))
-    elif article.get('sections'):
-        sec = article['sections'][0]
-        slides.append(Slide(type='teaser_stat', body=f"{sec['title']} — {sec['body'][:160]}…"))
+    # Slides 2-5 — Alternating dark/light punchy facts
+    styles = ['punch_light', 'punch_dark', 'punch_light', 'punch_dark']
+    for i, style in enumerate(styles):
+        if i < len(filtered):
+            text = filtered[i]
+            if len(text) > 90:
+                text = text[:87] + "…"
+            slides.append(Slide(type=style, body=text))
 
-    # Slide 4 — CTA pointing to carousel
+    # Slide 6 — CTA
     slides.append(Slide(type='teaser_cta'))
 
     total = len(slides)
@@ -339,25 +377,37 @@ def _slide_content(slide: Slide) -> str:
             </div>
         </div>"""
 
-    elif slide.type == 'teaser_stat':
+    elif slide.type == 'punch_dark':
         return f"""
-        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:36px;">
-            <div style="background:{AMBER}; height:6px; width:80px; border-radius:3px;"></div>
-            <div style="font-size:48px; font-weight:700; color:{WHITE}; line-height:1.3;">
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:32px; padding:0 20px;">
+            <div style="background:{AMBER}; height:6px; width:64px; border-radius:3px;"></div>
+            <div style="font-size:56px; font-weight:800; color:{WHITE}; line-height:1.2;">
+                {slide.body}
+            </div>
+        </div>"""
+
+    elif slide.type == 'punch_light':
+        return f"""
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:32px; padding:0 20px;">
+            <div style="background:{NAVY}; height:6px; width:64px; border-radius:3px;"></div>
+            <div style="font-size:56px; font-weight:800; color:{NAVY}; line-height:1.2;">
                 {slide.body}
             </div>
         </div>"""
 
     elif slide.type == 'teaser_cta':
         return f"""
-        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:44px;">
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:36px;">
             <div style="font-size:88px; line-height:1;">🦉</div>
-            <div style="font-size:52px; font-weight:800; color:{WHITE}; line-height:1.2;">
-                La suite ?<br><span style="color:{AMBER}">Dans le carousel</span><br>ci-dessus 👆
+            <div style="font-size:48px; font-weight:800; color:{WHITE}; line-height:1.2;">
+                L'analyse complète ?
+            </div>
+            <div style="font-size:56px; font-weight:800; color:{AMBER}; line-height:1.2;">
+                Dans mon dernier post 👆
             </div>
             <div style="background:{AMBER}; height:4px; width:72px; border-radius:2px;"></div>
-            <div style="font-size:26px; color:{WHITE_DIM}; line-height:1.5;">
-                Swipe sur le post pour lire<br>l'analyse complète.
+            <div style="font-size:24px; color:{WHITE_DIM}; line-height:1.5;">
+                Carousel · 10 slides · Swipe →
             </div>
         </div>"""
 
@@ -366,19 +416,24 @@ def _slide_content(slide: Slide) -> str:
 
 def render_html(slide: Slide, w: int, h: int) -> str:
     padding = max(64, h // 18)
+    bg = AMBER if slide.type == 'punch_light' else NAVY
+    # Teaser slides: no header/progress bar for cleaner look
+    is_teaser = slide.type in ('punch_dark', 'punch_light', 'teaser_cta')
+    header = "" if is_teaser else _header(slide)
+    progress = "" if is_teaser else _progress_bar(slide)
     return f"""<!DOCTYPE html>
 <html><head><meta charset="UTF-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   * {{ margin:0; padding:0; box-sizing:border-box; }}
-  body {{ width:{w}px; height:{h}px; background:{NAVY}; font-family:'Poppins',-apple-system,sans-serif; color:{WHITE}; overflow:hidden; }}
+  body {{ width:{w}px; height:{h}px; background:{bg}; font-family:'Poppins',-apple-system,sans-serif; color:{WHITE}; overflow:hidden; }}
   .slide {{ width:{w}px; height:{h}px; padding:{padding}px; display:flex; flex-direction:column; }}
 </style></head>
 <body><div class="slide">
-  {_header(slide)}
+  {header}
   {_slide_content(slide)}
-  {_progress_bar(slide)}
+  {progress}
 </div></body></html>"""
 
 
@@ -446,61 +501,53 @@ def build_reel(reel_paths: list[Path], output: Path, duration: float = SLIDE_DUR
         concat_file.unlink(missing_ok=True)
 
 
-def build_teaser_reel(slide_paths: list[Path], output: Path, duration: float = 3.0) -> bool:
-    """Assemble teaser slides with Ken Burns zoom effect via ffmpeg."""
-    fps = 30
-    frames = int(duration * fps)
-    # zoompan: slow zoom in (1.0 → 1.08) over the slide duration
-    zoom_filter = (
-        f"zoompan=z='min(zoom+0.0008,1.08)':d={frames}:s={REEL_W}x{REEL_H}:fps={fps},"
-        f"scale={REEL_W}:{REEL_H}"
-    )
+def build_teaser_reel(slide_paths: list[Path], output: Path, duration: float = 1.5) -> bool:
+    """Assemble teaser slides with crossfade transitions via ffmpeg.
 
-    # Build one clip per slide, then concatenate
-    clips = []
-    tmp_dir = output.parent / "_tmp_clips"
-    tmp_dir.mkdir(parents=True, exist_ok=True)
-
-    for i, path in enumerate(slide_paths):
-        clip = tmp_dir / f"clip_{i:02d}.mp4"
-        cmd = [
-            "ffmpeg", "-y",
-            "-loop", "1", "-t", str(duration),
-            "-i", str(path),
-            "-vf", zoom_filter,
-            "-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", str(fps),
-            str(clip)
-        ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            print(f"  WARNING: ffmpeg clip {i} failed: {result.stderr[-500:]}", file=sys.stderr)
-            return False
-        clips.append(clip)
-
-    if not clips:
-        print("  WARNING: no clips generated", file=sys.stderr)
+    Fast cuts (1.5s per slide) with 0.3s crossfade between slides.
+    """
+    if not slide_paths:
         return False
 
-    # Concatenate clips
-    tmp_dir.mkdir(parents=True, exist_ok=True)  # ensure dir still exists
-    concat_file = tmp_dir / "concat.txt"
-    with open(concat_file, 'w') as f:
-        for clip in clips:
-            f.write(f"file '{clip.resolve()}'\n")
+    fps = 30
+    fade_dur = 0.3
+    n = len(slide_paths)
+
+    # Build ffmpeg complex filter: inputs → xfade chain
+    inputs = []
+    for path in slide_paths:
+        inputs += ["-loop", "1", "-t", str(duration + fade_dur), "-i", str(path)]
+
+    # Chain xfade filters between consecutive slides
+    filter_parts = []
+    prev = "[0:v]"
+    for i in range(1, n):
+        out = f"[v{i}]" if i < n - 1 else "[vout]"
+        offset = round(i * duration - (i - 1) * fade_dur, 2)
+        filter_parts.append(
+            f"{prev}[{i}:v]xfade=transition=fade:duration={fade_dur}:offset={offset}{out}"
+        )
+        prev = out
+
+    # If only one slide, just scale it
+    if n == 1:
+        filter_str = f"[0:v]scale={REEL_W}:{REEL_H},format=yuv420p[vout]"
+    else:
+        filter_str = ";".join(filter_parts) + f";[vout]scale={REEL_W}:{REEL_H},format=yuv420p[final]"
+
+    final_label = "[final]" if n > 1 else "[vout]"
 
     cmd = [
         "ffmpeg", "-y",
-        "-f", "concat", "-safe", "0",
-        "-i", str(concat_file),
-        "-c:v", "libx264", "-pix_fmt", "yuv420p",
+        *inputs,
+        "-filter_complex", filter_str,
+        "-map", final_label,
+        "-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", str(fps),
         str(output)
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
-
-    # Cleanup tmp clips
-    import shutil
-    shutil.rmtree(tmp_dir, ignore_errors=True)
-
+    if result.returncode != 0:
+        print(f"  WARNING: ffmpeg teaser failed: {result.stderr[-500:]}", file=sys.stderr)
     return result.returncode == 0
 
 
@@ -549,7 +596,7 @@ def generate_instagram(
 
     # ── Teaser reel pipeline ────────────────────────────────────────────────────
     if teaser:
-        teaser_slides = build_teaser_slides(article, hook)
+        teaser_slides = build_teaser_slides(date_str, article, hook)
         print(f"\n{len(teaser_slides)} teaser slides prepared")
         teaser_dir = out_dir / "teaser"
         print(f"Screenshotting teaser slides ({REEL_W}x{REEL_H})...")
