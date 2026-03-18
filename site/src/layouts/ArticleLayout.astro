@@ -93,7 +93,7 @@ const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veille
     </h1>
 
     {/* Author bar */}
-    <div class="flex items-center gap-4 mb-10 pb-10 border-b border-slate-200">
+    <div class="flex items-center gap-4 mb-10">
       <img src={`${base}/images/avatar.jpg`} alt="Aurélien Allienne" class="size-12 rounded-full object-cover shrink-0" />
       <div>
         <p class="font-bold text-slate-900">Aurélien Allienne</p>
@@ -113,7 +113,8 @@ const imageUrl = image ? `${base}/images/${image}` : `${base}/placeholder-veille
       prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:py-2 prose-blockquote:italic prose-blockquote:text-2xl prose-blockquote:font-light prose-blockquote:text-slate-600
       prose-p:text-slate-700 prose-p:leading-relaxed
       prose-li:text-slate-700
-      article-intro">
+      article-intro
+      prose-h1:hidden">
       <slot />
     </div>
 
