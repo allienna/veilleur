@@ -61,7 +61,6 @@ def run_command(cmd: list[str], logger: logging.Logger, cwd: Path | None = None)
 def collect_files(target_date: str) -> list[str]:
     """Collect all files to commit for the given date."""
     patterns = [
-        f"data/output/{target_date}-*",
         f"site/src/content/articles/{target_date}.md",
         f"site/src/content/fiches/{target_date}-*",
         f"site/public/images/{target_date}.png",
