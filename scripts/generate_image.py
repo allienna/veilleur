@@ -7,7 +7,7 @@ import json
 import sys
 from pathlib import Path
 
-DATA_OUTPUT = Path("data/output")
+DATA_OUTPUT = Path(__file__).parent.parent / "data" / "output"
 DEFAULT_BACKEND = "local"
 
 

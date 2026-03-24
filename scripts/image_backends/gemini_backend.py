@@ -42,8 +42,21 @@ def generate(prompt: str, output_path: str) -> dict:
         ),
     )
 
+    candidates = getattr(response, "candidates", None)
+    if not candidates:
+        raise RuntimeError(
+            "No candidates in response (possibly blocked by safety filters)"
+        )
+
+    content = getattr(candidates[0], "content", None)
+    parts = getattr(content, "parts", None) if content is not None else None
+    if not parts:
+        raise RuntimeError(
+            "No content parts in response (possibly blocked by safety filters)"
+        )
+
     image_saved = False
-    for part in response.candidates[0].content.parts:
+    for part in parts:
         if part.inline_data is not None:
             image = part.as_image()
             image.save(str(output_path))
