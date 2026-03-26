@@ -24,6 +24,7 @@ site/node_modules/
 
 # Secrets
 .env
+*.key.json
 
 # OS
 .DS_Store
