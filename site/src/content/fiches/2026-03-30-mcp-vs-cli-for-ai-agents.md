@@ -1,7 +1,7 @@
 ---
 title: "MCP is up to 32× more expensive than CLI. Here's why we still use it."
 date: 2026-03-30
-url: https://www.scalekit.com/blog/mcp-vs-cli-for-ai-agents
+url: https://www.scalekit.com/blog/mcp-vs-cli-use
 authors: [ScaleKit]
 keywords: [MCP, CLI, AI agents, benchmark, token cost, delegated access]
 theme: IA
