@@ -1,19 +1,19 @@
 ---
-titre: "Harness design for long-running application development"
+title: "Harness design for long-running application development"
 date: 2026-03-31
 url: https://www.anthropic.com/engineering/harness-design-for-long-running-agents
-auteurs:
+authors:
   - Prithvi Rajasekaran (Anthropic Labs)
-mots_cles:
+keywords:
   - agent harness
   - multi-agent architecture
   - autonomous coding
   - evaluator design
   - GAN-inspired
 theme: IA
-tonalite: research
-articles:
-  - 2026-03-31
+tone: research
+used_in:
+  - "2026-03-31"
 ---
 
 ## Résumé
