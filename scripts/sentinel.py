@@ -197,6 +197,17 @@ def main():
             break
 
     notify("Veilleur — Article prêt", f"{target_date}: {title}")
+
+    # Step 5: Autopublish (chained, not separate cron)
+    logger.info("Running autopublish...")
+    result = run_command(
+        ["uv", "run", "python3", "scripts/autopublish.py", "--date", target_date],
+        logger,
+    )
+    if result.returncode != 0:
+        logger.warning("Autopublish failed")
+        notify("Veilleur — Erreur", f"Échec de l'autopublish pour {target_date}")
+
     logger.info(f"=== Sentinel completed for {target_date} ===")
 
 
