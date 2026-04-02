@@ -1,1 +1,50 @@
-[]
+[
+  {
+    "date": "2026-03-12",
+    "title": "Les modèles IA sont le nouveau béton armé. Cursor vaut 50 milliards.",
+    "themes": [
+      "IA"
+    ],
+    "likes": 4,
+    "comments": 0,
+    "reposts": 0,
+    "impressions": 0,
+    "score": 4
+  },
+  {
+    "date": "2026-03-11",
+    "title": "Les agents IA ont leur réseau social. Votre IAM n'a même pas leur mot de passe.",
+    "themes": [
+      "IA"
+    ],
+    "likes": 9,
+    "comments": 2,
+    "reposts": 0,
+    "impressions": 0,
+    "score": 15
+  },
+  {
+    "date": "2026-03-10",
+    "title": "Quand le code ne vaut plus rien, qui contrôle la machine ?",
+    "themes": [
+      "IA"
+    ],
+    "likes": 5,
+    "comments": 2,
+    "reposts": 0,
+    "impressions": 0,
+    "score": 11
+  },
+  {
+    "date": "2026-03-09",
+    "title": "L'IA a hacké Firefox. Elle ne peut toujours pas maintenir ton code.",
+    "themes": [
+      "IA"
+    ],
+    "likes": 19,
+    "comments": 0,
+    "reposts": 4,
+    "impressions": 0,
+    "score": 27
+  }
+]

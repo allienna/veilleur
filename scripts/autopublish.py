@@ -64,6 +64,9 @@ def collect_files(target_date: str) -> list[str]:
         f"site/src/content/articles/{target_date}.md",
         f"site/src/content/fiches/{target_date}-*",
         f"site/public/images/{target_date}.png",
+        "site/src/data/metrics.json",
+        "site/src/data/themes-over-time.json",
+        "site/src/data/articles-meta.json",
     ]
     files = []
     for pattern in patterns:
