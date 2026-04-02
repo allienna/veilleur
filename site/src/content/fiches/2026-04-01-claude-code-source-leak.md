@@ -11,26 +11,30 @@ used_in: ["2026-04-01"]
 
 ## Résumé
 
-Le code source complet de Claude Code, l'outil CLI d'Anthropic pour le coding assisté par IA, a fuité publiquement à cause d'un fichier source map exposé. La fuite révèle l'architecture interne de l'outil — un harnais TypeScript sophistiqué avec des outils dédiés, de la gestion de contexte avancée et un système de mémoire structuré.
+Le code source complet de Claude Code, l'outil CLI d'Anthropic pour le développement assisté par IA, a fuité suite à l'exposition d'un fichier source map dans le package npm distribué publiquement. La fuite révèle l'architecture interne détaillée de l'outil, confirmant que sa force repose davantage sur l'ingénierie du "harnais" que sur le modèle lui-même.
 
 ## Points clés
 
-- Un fichier source map (.map) accessible publiquement a permis de reconstruire l'intégralité du code TypeScript de Claude Code
-- La fuite confirme que la valeur de Claude Code réside autant dans son harnais d'ingénierie que dans le modèle sous-jacent
-- L'outil utilise des outils dédiés (Grep, Glob, LSP) plutôt que des appels shell pour une meilleure gestion des permissions
-- Un système de déduplication des lectures de fichiers et d'autocompaction optimise l'utilisation du contexte limité
-- Anthropic n'a pas immédiatement commenté la fuite
+- Un fichier source map exposé dans le package npm a permis de reconstruire l'intégralité du code TypeScript original
+- Claude Code utilise des outils dédiés (Grep, Glob, LSP) plutôt que de simples appels shell pour optimiser les permissions et la collecte de résultats
+- Le système inclut une déduplication des lectures de fichiers et une autocompaction des contextes trop longs
+- La fuite confirme l'investissement massif d'Anthropic dans l'ingénierie d'orchestration autour du modèle
+- Anthropic a réagi en retirant le source map des distributions ultérieures
 
 ## Analyse approfondie
 
-Le code source complet de l'outil en ligne de commande Claude Code d'Anthropic a été exposé publiquement après qu'un fichier source map a été découvert accessible sur les serveurs de l'entreprise. Les fichiers source map sont utilisés dans le développement web pour mapper le code minifié ou compilé vers son code source original, facilitant le débogage. Lorsqu'ils sont exposés publiquement, ils permettent à quiconque de reconstruire le code source original à partir du bundle distribué.
+Le code source complet de l'outil en ligne de commande Claude Code d'Anthropic a fuité publiquement après qu'un fichier source map a été découvert dans le package npm distribué. Les fichiers source map sont des fichiers de débogage qui permettent de reconstruire le code source original à partir du JavaScript minifié — ils n'auraient jamais dû être inclus dans la distribution de production.
 
-La fuite a rapidement attiré l'attention de la communauté technique. Des copies du code TypeScript reconstruit ont circulé sur GitHub avant d'être retirées. L'incident soulève des questions sur les pratiques de sécurité d'Anthropic concernant la distribution de leurs outils.
+La fuite a été rapidement repérée par la communauté de développeurs, et des copies du code TypeScript reconstitué ont commencé à circuler sur GitHub. Le code révèle l'architecture interne complète de Claude Code : comment l'outil gère le contexte des conversations, comment il interagit avec le système de fichiers local, comment il orchestre les appels au modèle, et quels garde-fous sont en place.
 
-Le code révèle une architecture soignée : plutôt que de simplement connecter un modèle de langage à un terminal, Claude Code implémente un système élaboré d'outils spécialisés, de gestion de contexte et de mémoire persistante. Cette architecture confirme la thèse que les performances des agents de code dépendent autant — sinon plus — de l'ingénierie du harnais que de la puissance du modèle lui-même.
+Parmi les détails techniques notables : Claude Code charge le contexte git (branche principale, branche courante, commits récents) et les fichiers CLAUDE.md au démarrage. Il utilise des marqueurs de frontière pour séparer le contenu statique du contenu dynamique, permettant un cache global des parties statiques pour éviter de les retraiter à chaque interaction. L'outil dispose de ses propres outils dédiés pour la recherche de fichiers (Glob), la recherche de contenu (Grep), et l'analyse de code (LSP — Language Server Protocol), plutôt que de passer par le shell.
 
-L'incident illustre un paradoxe récurrent dans l'industrie tech : les outils les plus sophistiqués en matière de sécurité et de développement peuvent être compromis par des erreurs basiques de configuration — ici, un fichier qui n'aurait jamais dû être accessible publiquement.
+La gestion du contexte limité est un aspect central de l'architecture. Le système effectue une déduplication des lectures de fichiers en vérifiant si un fichier a changé avant de le retraiter. Quand les résultats d'outils sont trop volumineux, ils sont écrits sur disque avec seulement un aperçu et une référence de fichier conservés dans le contexte. Un mécanisme d'autocompaction et de résumé intervient quand le contexte devient trop long.
+
+Claude Code maintient également un fichier markdown structuré pour chaque conversation avec des sections dédiées : titre de session, état courant, spécification de tâche, fichiers et fonctions, workflow, erreurs et corrections. Cette structure permet au modèle de maintenir une cohérence sur de longues sessions de travail.
+
+Anthropic n'a pas commenté publiquement la fuite au-delà du retrait du source map des distributions suivantes du package npm.
 
 ## Pourquoi ça compte
 
-Cette fuite est doublement significative : elle révèle les meilleures pratiques d'ingénierie d'agents IA (utile pour tout développeur dans le domaine) et rappelle que même les leaders de l'IA ne sont pas à l'abri d'erreurs de sécurité élémentaires.
+Cette fuite est paradoxalement une des meilleures démonstrations de la thèse "le harnais compte plus que le modèle" — le code révèle un investissement considérable dans l'ingénierie d'orchestration, la gestion de contexte et les outils spécialisés, confirmant que la différence entre un chatbot et un agent de code productif réside dans l'infrastructure qui entoure le modèle.
