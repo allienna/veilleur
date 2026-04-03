@@ -2,11 +2,11 @@
 title: "The Revenge of the Data Scientist"
 date: 2026-04-02
 url: "https://hamel.dev/blog/posts/revenge/"
-auteurs: ["Hamel Husain"]
-mots_cles: [data scientist, évaluation LLM, métriques, expérimentation, MLOps]
+authors: ["Hamel Husain"]
+keywords: [data scientist, évaluation LLM, métriques, expérimentation, MLOps]
 theme: "IA"
-tonalite: opinion
-articles: ["2026-04-02"]
+tone: opinion
+used_in: ["2026-04-02"]
 ---
 
 ## Résumé

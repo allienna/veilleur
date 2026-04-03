@@ -2,11 +2,11 @@
 title: "The Fed Chair Just Said What AI Leaders Won't: The Models Don't Work"
 date: 2026-04-02
 url: "https://vinvashishta.substack.com/p/the-fed-chair-just-said-what-ai-leaders"
-auteurs: ["Vin Vashishta"]
-mots_cles: [LLM, systèmes complexes, prédiction, causalité, architectures agentiques]
+authors: ["Vin Vashishta"]
+keywords: [LLM, systèmes complexes, prédiction, causalité, architectures agentiques]
 theme: "IA"
-tonalite: opinion
-articles: ["2026-04-02"]
+tone: opinion
+used_in: ["2026-04-02"]
 ---
 
 ## Résumé
