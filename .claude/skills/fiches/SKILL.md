@@ -82,6 +82,10 @@ This section is only generated when raw content is available — skip for source
 {1-2 sentences on why this source matters for tech watch.}
 ```
 
+### Frontmatter keys — IMPORTANT
+
+Use **exactly** the English key names shown in the template above: `authors`, `keywords`, `theme`, `tone`, `used_in`. Never use French equivalents (`auteurs`, `mots_cles`, `tonalite`, `articles`) — the Astro content schema expects the English keys and fiches will not render otherwise.
+
 ### Enrichment rules
 
 - **theme**: Match the themes used in the article frontmatter when relevant. Use the source content to determine the best fit.

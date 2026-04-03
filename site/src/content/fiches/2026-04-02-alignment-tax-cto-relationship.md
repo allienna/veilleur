@@ -2,11 +2,11 @@
 title: "The Alignment Tax: What a Real CTO Relationship Looks Like vs. a Fake One"
 date: 2026-04-02
 url: "https://leadershipintech.com/links/21933/3d78f33c-7ca0-4e03-9c70-68e56918a4cd/email"
-auteurs: ["Stephanie Leue"]
-mots_cles: ["alignement", "CPO-CTO", "confiance", "leadership", "relation exécutive"]
+authors: ["Stephanie Leue"]
+keywords: ["alignement", "CPO-CTO", "confiance", "leadership", "relation exécutive"]
 theme: "Leadership"
-tonalite: "opinion"
-articles: ["2026-04-02"]
+tone: "opinion"
+used_in: ["2026-04-02"]
 ---
 
 ## Résumé

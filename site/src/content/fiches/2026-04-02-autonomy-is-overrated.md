@@ -2,11 +2,11 @@
 title: "Autonomy Is Overrated: Why Alignment Beats Autonomy"
 date: 2026-04-02
 url: "https://leadershipintech.com/links/21932/3d78f33c-7ca0-4e03-9c70-68e56918a4cd/email"
-auteurs: ["Leadership in Tech"]
-mots_cles: ["autonomie", "alignement", "équipes", "silos", "organisation"]
+authors: ["Leadership in Tech"]
+keywords: ["autonomie", "alignement", "équipes", "silos", "organisation"]
 theme: "Leadership"
-tonalite: "opinion"
-articles: ["2026-04-02"]
+tone: "opinion"
+used_in: ["2026-04-02"]
 ---
 
 ## Résumé
