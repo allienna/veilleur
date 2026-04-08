@@ -36,7 +36,7 @@
 
 ## Phase 4: apps/dashboard
 
-- [x] **T-4.1**: Scaffold Next.js 15 dashboard app
+- [x] **T-4.1**: Scaffold Next.js 16 dashboard app
   - **Do**: Run `pnpm create next-app@latest apps/dashboard` with App Router, TypeScript, Tailwind, no ESLint (using Biome). Remove default ESLint config if generated. Update `tsconfig.json` to extend `@veilleur/tsconfig/nextjs.json` while keeping Next.js required paths.
   - **Test**: `pnpm --filter @veilleur/dashboard dev` starts on localhost
 

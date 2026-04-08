@@ -50,7 +50,7 @@
 | `packages/core/src/index.ts` | Exports version string |
 | `packages/core/src/__tests__/index.test.ts` | Trivial version test |
 | `packages/core/vitest.config.ts` | Vitest config |
-| `apps/dashboard/` | Next.js 15 app (created via create-next-app) |
+| `apps/dashboard/` | Next.js 16 app (created via create-next-app) |
 | `apps/dashboard/tsconfig.json` | Extends nextjs.json |
 | `apps/email-worker/package.json` | @veilleur/email-worker config |
 | `apps/email-worker/tsconfig.json` | Extends worker.json |
@@ -112,7 +112,7 @@
 ## Test Strategy
 
 - **Framework**: Vitest (packages/core). Next.js tests deferred to F-004+.
-- **Happy paths**: VERSION export is a non-empty string, matches package.json version
+- **Happy paths**: VERSION export is a non-empty string matching semver format (derived from package.json at build time)
 - **Error scenarios**: `turbo build` must fail on `strict: true` violations (verified manually during Phase 6)
 - **Edge cases**: Cross-package import resolution (dashboard → core)
 
@@ -122,4 +122,4 @@
 - **Key risks**:
   - `create-next-app` may generate config that conflicts with shared tsconfig — fix by overriding after generation
   - CF Worker types may need pinning to match wrangler version
-- **New dependencies**: turbo, pnpm, tsup, vitest, biome, @cloudflare/workers-types, next 15, react 19
+- **New dependencies**: turbo, pnpm, tsup, vitest, biome, @cloudflare/workers-types, next 16, react 19

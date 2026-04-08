@@ -1,1 +1,3 @@
-export const VERSION = "1.0.0";
+declare const __PACKAGE_VERSION__: string;
+
+export const VERSION: string = __PACKAGE_VERSION__;

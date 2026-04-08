@@ -3,7 +3,12 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**"]
+      "outputs": ["dist/**", ".next/**"],
+      "outputLogs": "new-only"
+    },
+    "@veilleur/email-worker#build": {
+      "dependsOn": ["^build"],
+      "outputs": []
     },
     "dev": {
       "persistent": true,
