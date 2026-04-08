@@ -41,13 +41,11 @@ Each `newsletter-X.json` contains:
 
 ## Available skills
 
-- `/generate` — Generate the daily article (filter, write, push to Notion). Writing rules are in `.claude/skills/generate/writing-guide.md`
+- `/generate` — Generate the daily article (filter, write, publish to site). Writing rules are in `.claude/skills/generate/writing-guide.md`
 - `/blog <slug>` — Publish a personal blog post to the site (separate from tech watch articles)
 - `/sources` — Display today's sources sorted by theme priority
 - `/search` — Semantic search in article history
 - `/notebook [date] [--audio] [--video] [--dry-run]` — Create a NotebookLM notebook from daily sources and optionally generate a podcast and/or video
-- `/ship` — Create branch, commit, push and open a PR
-- `/merge` — Copilot review, comment resolution, squash merge
 
 ## Python environment
 

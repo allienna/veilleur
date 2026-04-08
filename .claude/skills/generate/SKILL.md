@@ -1,6 +1,6 @@
 ---
 name: generate
-description: Generate the daily tech watch article (filter, write, push to Notion, publish to site)
+description: Generate the daily tech watch article (filter, write, publish to site)
 context: fork
 argument-hint: "[date]"
 ---
@@ -29,7 +29,7 @@ If the prompt contains "autonomous mode", apply these overrides:
 - Step 6: SKIP (no Notion push)
 - Step 7: SKIP (no Notion review wait)
 - Step 8: SKIP (no Notion fetch)
-- Step 9: Copy files to site but DO NOT propose /ship
+- Step 9: Copy files to site but DO NOT propose /claude-feature-flow:ship
 
 ## 0.5 Metrics feedback
 
@@ -225,4 +225,4 @@ Copy the reviewed files to the Astro site structure:
 1. **Article**: Copy `data/output/{DATE}-article.md` to `site/src/content/articles/{DATE}.md`
 2. **Fiches**: Copy all `data/fiches/{DATE}-*.md` files to `site/src/content/fiches/`
 
-Display a summary of files copied, then ask: "Tu veux lancer /ship pour créer la PR ?"
+Display a summary of files copied, then ask: "Tu veux lancer /claude-feature-flow:ship pour créer la PR ?"
