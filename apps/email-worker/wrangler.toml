@@ -1,0 +1,7 @@
+name = "veilleur-email-worker"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+[triggers]
+# Email routing will be configured via CloudFlare dashboard
+# watch@yourdomain.com -> this worker
