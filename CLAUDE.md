@@ -46,8 +46,6 @@ Each `newsletter-X.json` contains:
 - `/sources` — Display today's sources sorted by theme priority
 - `/search` — Semantic search in article history
 - `/notebook [date] [--audio] [--video] [--dry-run]` — Create a NotebookLM notebook from daily sources and optionally generate a podcast and/or video
-- `/ship` — Create branch, commit, push and open a PR
-- `/merge` — Copilot review, comment resolution, squash merge
 
 ## Python environment
 
