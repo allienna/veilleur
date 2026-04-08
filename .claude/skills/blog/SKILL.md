@@ -96,4 +96,4 @@ Confirm the build succeeds and the post is rendered.
 
 ## 7. Publish
 
-Ask: "Tu veux lancer /ship pour créer la PR ?"
+Ask: "Tu veux lancer /claude-feature-flow:ship pour créer la PR ?"

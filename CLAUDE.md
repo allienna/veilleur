@@ -41,7 +41,7 @@ Each `newsletter-X.json` contains:
 
 ## Available skills
 
-- `/generate` — Generate the daily article (filter, write, push to Notion). Writing rules are in `.claude/skills/generate/writing-guide.md`
+- `/generate` — Generate the daily article (filter, write, publish to site). Writing rules are in `.claude/skills/generate/writing-guide.md`
 - `/blog <slug>` — Publish a personal blog post to the site (separate from tech watch articles)
 - `/sources` — Display today's sources sorted by theme priority
 - `/search` — Semantic search in article history

@@ -4,7 +4,7 @@
 
 ## 1. Project Context
 
-Veilleur automates daily LinkedIn tech watch article generation: ingest newsletters, curate sources, generate articles via LLM, edit, and publish to an Astro static site. Single-user tool for Aurelien Allienne. The v1 rebuild replaces Python/n8n/Docker with a unified TypeScript stack on GCP.
+Veilleur automates daily LinkedIn tech watch article generation: ingest newsletters, curate sources, generate articles via LLM, edit, and publish to an Astro static site. Single-user tool for Aurélien Allienne. The v1 rebuild replaces Python/n8n/Docker with a unified TypeScript stack on GCP.
 
 ## 2. Non-Negotiable Principles
 
@@ -12,7 +12,7 @@ Veilleur automates daily LinkedIn tech watch article generation: ingest newslett
 2. **No silent failures**: Every pipeline step logs status, duration, and errors to Firestore `pipeline_runs`. If it can fail, it must be visible in the dashboard.
 3. **Partial success over total failure**: One newsletter/source/step failing must not block others. Ingestion, scraping, and pipeline steps degrade individually.
 4. **No Notion dependency**: Draft review and editing happen in the built-in dashboard editor. Notion MCP is removed.
-5. **No n8n/Docker/Colima dependency**: Email ingestion is event-driven via CloudFlare Email Workers. Zero Docker in the pipeline.
+5. **No n8n/Docker/Colima dependency**: Email ingestion and orchestration are event-driven TypeScript services (CloudFlare Email Workers), with no Docker/Colima requirement for local development, ingestion, or runtime orchestration. Docker is not used as an application dependency or workflow orchestrator; a Dockerfile is allowed only as a packaging artifact for Cloud Run deployment.
 6. **No Gmail OAuth**: Newsletters arrive at `watch@{domain}` via CloudFlare Email Routing. No OAuth token management.
 7. **Secrets never in code**: `GEMINI_API_KEY`, `INGEST_SECRET`, `VEILLEUR_PASSWORD` stored in GCP Secret Manager or Cloud Run env vars. Never committed.
 8. **Deterministic orchestration**: Pipeline steps are deterministic TypeScript code. LLM calls are confined to content generation (article writing, fiches, image prompts) — never for control flow or routing.
