@@ -20,7 +20,7 @@
 **Depends on**: F-001
 **Delivers**: Firestore client in packages/core, TypeScript types for all collections, emulator config for local dev
 **Estimated size**: S
-**Status**: Not started
+**Status**: Specifying
 
 ### F-003: core-logic-port
 **Summary**: Port source filtering, theme detection, and trend detection from Python to TypeScript in packages/core with tests.
