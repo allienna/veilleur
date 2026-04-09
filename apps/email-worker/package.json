@@ -1,0 +1,14 @@
+{
+  "name": "@veilleur/email-worker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "biome check src/"
+  },
+  "devDependencies": {
+    "@veilleur/tsconfig": "workspace:*",
+    "@cloudflare/workers-types": "^4",
+    "typescript": "^5"
+  }
+}

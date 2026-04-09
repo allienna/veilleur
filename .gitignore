@@ -26,5 +26,12 @@ site/node_modules/
 .env
 *.key.json
 
+# Node / Turborepo
+node_modules/
+.turbo/
+dist/
+.next/
+.wrangler/
+
 # OS
 .DS_Store

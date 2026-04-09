@@ -1,5 +1,50 @@
 [
   {
+    "date": "2026-04-08",
+    "title": "Sans titre",
+    "themes": [
+      "IA"
+    ],
+    "word_count": 1046,
+    "source_count": 7
+  },
+  {
+    "date": "2026-04-07",
+    "title": "30 milliards de revenus, 122 milliards levés — et toujours pas assez de GPU.",
+    "themes": [
+      "IA"
+    ],
+    "word_count": 910,
+    "source_count": 7
+  },
+  {
+    "date": "2026-04-06",
+    "title": "La moitié de vos dashboards sont morts. Et leur remplaçant ne demande pas la permission.",
+    "themes": [
+      "Data"
+    ],
+    "word_count": 942,
+    "source_count": 6
+  },
+  {
+    "date": "2026-04-03",
+    "title": "Le code est gratuit. Ce qui coûte cher, c'est tout le reste.",
+    "themes": [
+      "IA"
+    ],
+    "word_count": 869,
+    "source_count": 7
+  },
+  {
+    "date": "2026-04-02",
+    "title": "Plus d'autonomie ? Non. Plus d'alignement.",
+    "themes": [
+      "Leadership"
+    ],
+    "word_count": 952,
+    "source_count": 6
+  },
+  {
     "date": "2026-04-01",
     "title": "Le code fuit, la supply chain craque, les agents s'émancipent.",
     "themes": [

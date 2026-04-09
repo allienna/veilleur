@@ -2,7 +2,7 @@
 
 **Track ID**: 001-monorepo-scaffold
 **Roadmap ref**: F-001
-**Status**: Draft
+**Status**: Complete
 **Created**: 2026-04-08
 **Branch**: feat/001-monorepo-scaffold
 **PRD sections**: Architecture (§5), Phase 1
@@ -88,7 +88,7 @@ CloudFlare Email Worker stub:
 - CI/CD pipeline (F-017)
 - Any business logic — this is pure scaffolding
 
-## Open Questions
+## Decisions
 
-1. **Package manager**: pnpm (Turborepo recommended) or npm? pnpm is more space-efficient and has better workspace support, but npm is simpler. Recommendation: **pnpm**.
-2. **Node version**: Lock to Node 20 LTS or 22? Cloud Run and CF Workers both support 20. Recommendation: **Node 20 LTS** (`.node-version` or `engines` field).
+1. **Package manager**: pnpm (Turborepo recommended, better workspace support)
+2. **Node version**: Node 20 LTS (`.node-version` + `engines` field)
