@@ -12,7 +12,7 @@
 **Depends on**: None
 **Delivers**: Working monorepo, `turbo build` passes, empty Next.js app runs locally, shared types importable from core
 **Estimated size**: S
-**Status**: In Progress
+**Status**: Complete
 
 ### F-002: firestore-schema
 **Summary**: Firestore client setup with typed collections (sources, newsletters, articles, pipeline_runs, metrics) and seed data utilities.
