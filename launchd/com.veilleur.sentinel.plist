@@ -6,10 +6,7 @@
     <string>com.veilleur.sentinel</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/sn0rks/.local/bin/uv</string>
-        <string>run</string>
-        <string>python3</string>
-        <string>scripts/sentinel.py</string>
+        <string>/Users/sn0rks/Code/github.com/allienna/veilleur/launchd/run-sentinel.sh</string>
     </array>
     <key>WorkingDirectory</key>
     <string>/Users/sn0rks/Code/github.com/allienna/veilleur</string>

@@ -112,24 +112,23 @@ notebook DATE="" *FLAGS="":
 
 # ── Sentinel (automation) ──────────────────────────────────────────
 
-# Install sentinel and autopublish launchd agents
+# Install sentinel launchd agent (autopublish is chained inside sentinel)
 sentinel-install:
     mkdir -p data/logs
+    chmod +x launchd/run-sentinel.sh
     cp launchd/com.veilleur.sentinel.plist ~/Library/LaunchAgents/
-    cp launchd/com.veilleur.autopublish.plist ~/Library/LaunchAgents/
-    launchctl load ~/Library/LaunchAgents/com.veilleur.sentinel.plist
-    launchctl load ~/Library/LaunchAgents/com.veilleur.autopublish.plist
-    @echo "Sentinel (20h) and autopublish (23h) installed"
+    launchctl bootout gui/$(id -u)/com.veilleur.sentinel 2>/dev/null || true
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.veilleur.sentinel.plist
+    @echo "Sentinel installed (fires daily at 20:00)"
 
 # Check sentinel status
 sentinel-status:
     @echo "=== Sentinel (20h) ==="
-    @launchctl list | grep com.veilleur.sentinel || echo "Not loaded"
-    @echo "=== Autopublish (23h) ==="
-    @launchctl list | grep com.veilleur.autopublish || echo "Not loaded"
+    @launchctl print gui/$(id -u)/com.veilleur.sentinel 2>/dev/null | grep -E "state|runs|last exit" || echo "Not loaded"
     @echo "=== Recent logs ==="
-    @ls -la data/logs/*-sentinel.log 2>/dev/null | tail -3 || echo "No sentinel logs"
-    @ls -la data/logs/*-autopublish.log 2>/dev/null | tail -3 || echo "No autopublish logs"
+    @ls -lat data/logs/launchd-*.log 2>/dev/null | head -3 || echo "No launchd logs"
+    @ls -lat data/logs/*-sentinel.log 2>/dev/null | head -3 || echo "No sentinel logs"
+    @ls -lat data/logs/*-autopublish.log 2>/dev/null | head -3 || echo "No autopublish logs"
 
 # Show sentinel logs for a date (defaults to today)
 sentinel-logs DATE="":
@@ -137,11 +136,10 @@ sentinel-logs DATE="":
     @echo "---"
     @cat data/logs/{{ if DATE == "" { `date +%Y-%m-%d` } else { DATE } }}-autopublish.log 2>/dev/null || echo "No autopublish log"
 
-# Stop all sentinel agents
+# Stop sentinel agent
 sentinel-stop:
-    launchctl unload ~/Library/LaunchAgents/com.veilleur.sentinel.plist 2>/dev/null || true
-    launchctl unload ~/Library/LaunchAgents/com.veilleur.autopublish.plist 2>/dev/null || true
-    @echo "Sentinel agents stopped"
+    launchctl bootout gui/$(id -u)/com.veilleur.sentinel 2>/dev/null || true
+    @echo "Sentinel stopped"
 
 # Run sentinel manually for a specific date (for testing)
 sentinel-run DATE="":
