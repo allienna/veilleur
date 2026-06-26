@@ -1,6 +1,6 @@
 ---
 name: generate
-description: Generate the daily tech watch article (filter, write, push to Notion, publish to site)
+description: Generate the daily tech watch article (filter, write, publish to site)
 context: fork
 argument-hint: "[date]"
 ---
@@ -18,7 +18,6 @@ Follow these steps in order:
 ## Mode autonome
 
 If the prompt contains "autonomous mode", apply these overrides:
-- Step 0.5: SKIP entirely
 - Step 1: Execute but DO NOT ask for confirmation — continue directly
 - Step 1.5: Execute but DO NOT ask for confirmation
 - Step 3: Select the narrative AUTONOMOUSLY:
@@ -26,37 +25,7 @@ If the prompt contains "autonomous mode", apply these overrides:
   - Then theme priority: IA > Leadership > Data > Tech
   - Select 6-7 main sources + 3-4 "pour aller plus loin"
   - DO NOT ask for validation
-- Step 6: SKIP (no Notion push)
-- Step 7: SKIP (no Notion review wait)
-- Step 8: SKIP (no Notion fetch)
-- Step 9: Copy files to site but DO NOT propose /ship
-
-## 0.5 Metrics feedback
-
-Check if there's a recent article without metrics:
-
-```bash
-just metrics-untracked
-```
-
-If an article without metrics is found (`date` field is not null):
-- Display: "📊 Ton post du {DATE} ({TITLE}) — combien de likes, commentaires, reposts ?"
-- Wait for user response
-- Record the metrics:
-
-```bash
-just metrics {DATE} {LIKES} {COMMENTS} {REPOSTS}
-```
-
-Then display engagement insights:
-
-```bash
-just insights-for-generate
-```
-
-If the script returns text, display it. These insights guide the narrative angle selection in step 3.
-
-If no article without metrics (`date` field is null), skip to step 1.
+- Step 6: Copy files to site but DO NOT propose /ship
 
 ## 1. Load and filter sources
 
@@ -188,37 +157,7 @@ just index {DATE}
 
 Non-blocking: if indexing fails, display a warning and continue to step 6.
 
-## 6. Push to Notion
-
-Via the Notion MCP, create a page in the "Veille LinkedIn" database with:
-- Title = article title
-- Date = target date
-- Status = "À relire"
-- Content = article.md
-- A callout "📝 Post LinkedIn" with post.md content
-- A callout "🎨 Prompt Image" with image-prompt.md content
-
-Confirm the URL of the created Notion page.
-
-## 7. Review on Notion
-
-Display:
-> 📝 L'article est sur Notion : {NOTION_URL}
-> Relis-le, apporte tes modifications si besoin, puis dis-moi quand c'est bon.
-
-Wait for user confirmation before continuing.
-
-## 8. Fetch reviewed article from Notion
-
-Fetch the Notion page content using the Notion MCP `fetch` tool with the page ID from step 6.
-
-Parse the fetched content to extract:
-- The article body (everything before the "Post LinkedIn" callout)
-- Update `data/output/{DATE}-article.md` with the reviewed content from Notion, preserving the YAML front matter
-
-This ensures the site version matches exactly what was validated on Notion.
-
-## 9. Publish to site
+## 6. Publish to site
 
 Copy the reviewed files to the Astro site structure:
 

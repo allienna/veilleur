@@ -41,7 +41,7 @@ Each `newsletter-X.json` contains:
 
 ## Available skills
 
-- `/generate` — Generate the daily article (filter, write, push to Notion). Writing rules are in `.claude/skills/generate/writing-guide.md`
+- `/generate` — Generate the daily article (filter, write, publish to site). Writing rules are in `.claude/skills/generate/writing-guide.md`
 - `/blog <slug>` — Publish a personal blog post to the site (separate from tech watch articles)
 - `/sources` — Display today's sources sorted by theme priority
 - `/search` — Semantic search in article history
@@ -170,12 +170,3 @@ GitHub Actions workflow (`.github/workflows/deploy.yml`) triggers on push to `ma
 - **Header/Footer**: `bg-slate-900`
 - **Mascot**: Le Veilleur owl — bible in `.claude/skills/generate/writing-guide.md`
 
-## Notion output
-
-Use the Notion MCP to create a page in the "Veille LinkedIn" database with:
-- Article title
-- "Date" property: target date
-- "Status" property: "À relire"
-- Content: full article in markdown
-- "Post LinkedIn" callout block
-- "Prompt Image" callout block
