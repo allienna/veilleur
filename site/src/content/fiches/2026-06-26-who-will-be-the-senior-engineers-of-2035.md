@@ -3,7 +3,7 @@ title: "Who will be the senior engineers of 2035?"
 date: 2026-06-26
 url: https://link.mail.beehiiv.com/ss/c/u001.NxDti-hLnxnUue0yjhAbRz14sG_Qqg3mQcec1wBSAw7E2jnDzSLarfCKrDYcJ5u9qaPzYUFzWjJDFGTUV0RulW1XNoGPnhUz0wR6K1flr8pL0k04LpZxv5cn-0c2MU4BBFUyl_OFERXKfQnBIcSfreG6xYJSGFpIkGFCyoHeAhYTH54430Cv0y1bCUhmhAU0IdbWrym-omU8UvucN1B8nQ/4rt/GprCMSxARbOYQXWwa4OaOQ/h9/h001.NcZrx8N-pIyP6bnozk-4MjAgCEuPaJu2w5ELT0XgRvs
 authors: [The Engineering Manager]
-keywords: [seniors, juniors, mentorat, pipeline, AI, 2035]
+keywords: [seniors, juniors, mentorat, pipeline, AI, "2035"]
 theme: Leadership
 tone: opinion
 used_in: ["2026-06-26"]
