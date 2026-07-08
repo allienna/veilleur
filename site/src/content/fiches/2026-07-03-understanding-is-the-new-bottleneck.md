@@ -6,7 +6,7 @@ authors: [Geoffrey Litt]
 keywords: [compréhension, dette cognitive, revue de code, agents IA, augmentation]
 theme: IA
 tone: opinion
-used_in: ["2026-07-03"]
+used_in: ["2026-07-03", "2026-07-07"]
 ---
 
 ## Résumé
