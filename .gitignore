@@ -28,3 +28,5 @@ site/node_modules/
 
 # OS
 .DS_Store
+.claude/settings.json
+.claude/settings.json.bak.*
