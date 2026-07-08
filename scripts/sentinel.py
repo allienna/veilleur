@@ -12,11 +12,24 @@ import json
 import logging
 import subprocess
 import sys
+import time
 from datetime import date
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 MIN_SOURCES = 3
+TRANSIENT_API_STATUSES = {429, 500, 502, 503, 504}
+GENERATION_MAX_RETRIES = 2
+GENERATION_RETRY_DELAY_SECONDS = 60
+
+
+def is_transient_error(stdout: str) -> bool:
+    """Return True if the claude -p JSON output reports a transient API error."""
+    try:
+        data = json.loads(stdout)
+    except (json.JSONDecodeError, TypeError):
+        return False
+    return data.get("api_error_status") in TRANSIENT_API_STATUSES
 
 
 def setup_logging(target_date: str) -> logging.Logger:
@@ -109,8 +122,19 @@ In step 9: copy files to site but do NOT propose /ship."""
         "--max-budget-usd", "5",
     ]
 
-    result = run_command(cmd, logger)
-    if result.returncode != 0:
+    attempt = 1
+    while True:
+        result = run_command(cmd, logger)
+        if result.returncode == 0:
+            break
+        if attempt <= GENERATION_MAX_RETRIES and is_transient_error(result.stdout):
+            logger.warning(
+                f"Transient API error on attempt {attempt}/{GENERATION_MAX_RETRIES + 1}, "
+                f"retrying in {GENERATION_RETRY_DELAY_SECONDS}s..."
+            )
+            time.sleep(GENERATION_RETRY_DELAY_SECONDS)
+            attempt += 1
+            continue
         logger.error(f"Claude generation failed with exit code {result.returncode}")
         return False
 

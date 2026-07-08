@@ -31,7 +31,11 @@ mkdir -p "$LOG_DIR"
 
 cd "$PROJECT_ROOT" || { echo "[$(date -Iseconds)] cd failed" >> "$LOG"; exit 78; }
 
-"$PROJECT_ROOT/.venv/bin/python3" scripts/sentinel.py "$@" >> "$LOG" 2>&1
+# The scheduled StartCalendarInterval wake is a brief power-nap dark wake;
+# without holding an idle-sleep assertion the Mac drops back to sleep mid-run
+# and the long-lived `claude -p` network call stalls for hours (see 2026-07-06/07
+# incidents: the run only resumed once the lid was opened the next morning).
+caffeinate -i "$PROJECT_ROOT/.venv/bin/python3" scripts/sentinel.py "$@" >> "$LOG" 2>&1
 EXIT=$?
 
 echo "[$(date -Iseconds)] sentinel exited with code $EXIT" >> "$LOG"
